@@ -1,0 +1,141 @@
+import { Recipe } from "../types";
+import { colors } from "../theme/colors";
+
+export const recipes: Recipe[] = [
+  {
+    id: "besan-chilla",
+    name: "Besan chilla, two ways",
+    slot: "Breakfast",
+    kcal: 380,
+    protein: 22,
+    minutes: 15,
+    tint: colors.orangeTint,
+    ink: "#B4703A",
+    ingredients: [
+      ["Besan", "1 katori"],
+      ["Onion, tomato, coriander", "½ cup chopped"],
+      ["Ajwain", "¼ tsp"],
+      ["Ghee", "1 tsp"],
+      ["Curd", "1 katori"],
+    ],
+    method: [
+      "Whisk besan with water to a pouring batter, rest 10 minutes.",
+      "Fold in the vegetables, ajwain and salt.",
+      "Cook on a hot tawa with ¼ tsp ghee each, both sides.",
+      "Serve with mint chutney and a katori of curd.",
+    ],
+  },
+  {
+    id: "grilled-paneer-bowl",
+    name: "Grilled paneer bowl",
+    slot: "Dinner",
+    kcal: 420,
+    protein: 28,
+    minutes: 20,
+    tint: colors.sage,
+    ink: colors.sageInk,
+    ingredients: [
+      ["Paneer", "100 g"],
+      ["Bell pepper, zucchini", "1 cup"],
+      ["Curd marinade", "2 tbsp"],
+      ["Olive oil", "1 tsp"],
+      ["Lemon", "½"],
+    ],
+    method: [
+      "Marinate paneer in curd, chilli and lemon for 15 minutes.",
+      "Grill on a hot pan until the edges colour.",
+      "Toss the vegetables in the same pan, 3 minutes only.",
+      "Finish with lemon and black pepper.",
+    ],
+  },
+  {
+    id: "moong-dal-khichdi",
+    name: "Moong dal khichdi",
+    slot: "Lunch",
+    kcal: 460,
+    protein: 19,
+    minutes: 25,
+    tint: colors.amberTint,
+    ink: colors.amberInk,
+    ingredients: [
+      ["Moong dal", "½ katori"],
+      ["Rice", "½ katori"],
+      ["Lauki", "1 cup"],
+      ["Ghee", "1 tsp"],
+      ["Jeera, hing to temper", ""],
+    ],
+    method: [
+      "Pressure cook dal, rice and lauki with turmeric, three whistles.",
+      "Temper jeera and hing in ghee.",
+      "Fold through, adjust water to a soft consistency.",
+      "Serve with curd and a green salad.",
+    ],
+  },
+  {
+    id: "roasted-chana-chaat",
+    name: "Roasted chana chaat",
+    slot: "Snack",
+    kcal: 160,
+    protein: 9,
+    minutes: 8,
+    tint: colors.sky,
+    ink: colors.skyInk,
+    ingredients: [
+      ["Roasted chana", "30 g"],
+      ["Onion, tomato", "2 tbsp"],
+      ["Lemon", "¼"],
+      ["Chaat masala", "a pinch"],
+    ],
+    method: [
+      "Toss everything together just before eating.",
+      "Add coriander and lemon at the end so it stays crisp.",
+    ],
+  },
+  {
+    id: "savoury-vegetable-oats",
+    name: "Savoury vegetable oats",
+    slot: "Breakfast",
+    kcal: 340,
+    protein: 14,
+    minutes: 12,
+    tint: colors.lilac,
+    ink: colors.lilacInk,
+    ingredients: [
+      ["Rolled oats", "40 g"],
+      ["Mixed vegetables", "1 cup"],
+      ["Curd", "½ katori"],
+      ["Mustard seeds", "¼ tsp"],
+    ],
+    method: [
+      "Dry roast the oats for two minutes.",
+      "Temper mustard, add vegetables, cook briefly.",
+      "Add oats and hot water, cover for three minutes.",
+      "Serve with curd on the side.",
+    ],
+  },
+  {
+    id: "clear-vegetable-soup",
+    name: "Clear vegetable soup",
+    slot: "Dinner",
+    kcal: 90,
+    protein: 4,
+    minutes: 18,
+    tint: colors.coral,
+    ink: colors.coralInk,
+    ingredients: [
+      ["Mixed vegetables", "1.5 cups"],
+      ["Garlic", "2 cloves"],
+      ["Black pepper", "to taste"],
+      ["Lemon", "½"],
+    ],
+    method: [
+      "Simmer the vegetables with garlic for 12 minutes.",
+      "Season with pepper and finish with lemon.",
+      "Keep the vegetables in — the fibre is the point.",
+    ],
+  },
+];
+
+export function recipeById(id: string): Recipe | undefined {
+  return recipes.find((r) => r.id === id);
+}

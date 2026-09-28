@@ -40,6 +40,7 @@ interface AppData {
   programmeId: string;
   consent: ConsentData;
   paymentMethod: string;
+  paymentId: string | null;
   intake: IntakeAnswers;
   gender: "female" | "male" | null;
   measurements: MeasureValues;
@@ -58,6 +59,7 @@ const initialData: AppData = {
   programmeId: "reset360",
   consent: { name: "", address: "", photoConsent: "agree", faceConsent: "without", signature: "" },
   paymentMethod: "UPI · GPay, PhonePe",
+  paymentId: null,
   intake: emptyIntake,
   gender: null,
   measurements: {},

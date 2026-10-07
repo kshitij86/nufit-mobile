@@ -1,5 +1,5 @@
 import "./global.css";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
@@ -20,9 +20,11 @@ import {
 } from "@expo-google-fonts/nunito";
 
 import { AppStateProvider } from "./src/state/AppState";
+import { AuthProvider } from "./src/state/Auth";
 import RootNavigator from "./src/navigation/RootNavigator";
 import Toast from "./src/components/Toast";
 import QuickLogSheet from "./src/components/QuickLogSheet";
+import AppSplash from "./src/components/AppSplash";
 import { colors } from "./src/theme/colors";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -42,12 +44,12 @@ export default function App() {
   const [nunitoLoaded] = useNunitoFonts({ Nunito_400Regular, Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold });
 
   const fontsLoaded = outfitLoaded && nunitoLoaded;
+  const [splashDone, setSplashDone] = useState(false);
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+  const onSplashLayout = useCallback(() => {
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
+  const onSplashFinish = useCallback(() => setSplashDone(true), []);
 
   if (!fontsLoaded) {
     return null;
@@ -55,16 +57,19 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AppStateProvider>
-        <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-          <NavigationContainer theme={navTheme}>
-            <RootNavigator />
-            <Toast />
-            <QuickLogSheet />
-          </NavigationContainer>
-          <StatusBar style="dark" />
-        </View>
-      </AppStateProvider>
+      <AuthProvider>
+        <AppStateProvider>
+          <View style={{ flex: 1 }}>
+            <NavigationContainer theme={navTheme}>
+              <RootNavigator />
+              <Toast />
+              <QuickLogSheet />
+            </NavigationContainer>
+            {!splashDone && <AppSplash onLayout={onSplashLayout} onFinish={onSplashFinish} />}
+            <StatusBar style="dark" />
+          </View>
+        </AppStateProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

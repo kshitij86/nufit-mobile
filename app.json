@@ -27,7 +27,13 @@
     },
     "plugins": [
       "expo-font",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF9F3"
+        }
+      ],
+      "expo-secure-store"
     ]
   }
 }

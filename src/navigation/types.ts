@@ -3,6 +3,8 @@ import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { CompositeNavigationProp } from "@react-navigation/native";
 
 export type RootStackParamList = {
+  Login: { email?: string } | undefined;
+  Register: undefined;
   Welcome: undefined;
   Quiz: undefined;
   Match: undefined;

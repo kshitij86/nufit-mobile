@@ -33,7 +33,7 @@ export default function PillButton({
       : "transparent";
 
   const textColor =
-    variant === "primary" ? (isDisabled ? colors.faint : "#FFFFFF") : colors.orangeDark;
+    variant === "primary" ? (isDisabled ? colors.faint : "#FFFFFF") : disabled ? colors.faint : colors.orangeDark;
 
   const borderColor = variant === "outline" ? colors.hairline : "transparent";
   const [pressed, setPressed] = useState(false);

@@ -12,6 +12,7 @@ export default function ScreenScaffold({
   bg = colors.cream,
   edges = ["top", "bottom"],
   contentStyle,
+  scrollRef,
 }: {
   children: React.ReactNode;
   header?: React.ReactNode;
@@ -20,6 +21,7 @@ export default function ScreenScaffold({
   bg?: string;
   edges?: ("top" | "bottom" | "left" | "right")[];
   contentStyle?: ViewStyle;
+  scrollRef?: React.Ref<ScrollView>;
 }) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: bg }} edges={edges}>
@@ -27,6 +29,7 @@ export default function ScreenScaffold({
         {header && <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 }}>{header}</View>}
         {scroll ? (
           <ScrollView
+            ref={scrollRef}
             style={{ flex: 1 }}
             contentContainerStyle={[
               { paddingHorizontal: 20, paddingBottom: footer ? 8 : 24, paddingTop: header ? 8 : 16 },

@@ -7,11 +7,13 @@ import ScreenScaffold from "../components/ScreenScaffold";
 import { BackButton, Body, Card, ProgressBar } from "../components/Primitives";
 import { programmeById } from "../data/programmes";
 import { useAppState } from "../state/AppState";
+import { useAuth } from "../state/Auth";
 import { RootNav } from "../navigation/types";
 
 export default function Profile() {
   const navigation = useNavigation<RootNav>();
   const { data } = useAppState();
+  const { signOut } = useAuth();
   const programme = programmeById(data.programmeId);
   const initials = data.profileName.split(" ").map((n) => n[0]).join("").slice(0, 2);
 
@@ -63,7 +65,7 @@ export default function Profile() {
           </Pressable>
         ))}
         <Pressable
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: "Welcome" }] })}
+          onPress={signOut}
           style={{ paddingVertical: 18 }}
         >
           <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.orange }}>Sign out</Text>

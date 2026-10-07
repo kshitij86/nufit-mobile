@@ -9,7 +9,8 @@ import { programmeById } from "../data/programmes";
 import { useAppState } from "../state/AppState";
 import { RootNav } from "../navigation/types";
 import { formatInr } from "../utils/format";
-import { createOrder, verifyPayment } from "../services/payments";
+import { createOrder, verifyPayment, VERIFY_FAILED_MESSAGE } from "../services/payments";
+import { NetworkError, userMessage } from "../services/http";
 import RazorpayCheckoutModal, { RazorpayCheckoutOptions, RazorpayResult } from "../components/RazorpayCheckoutModal";
 
 const paymentOptions = ["UPI · GPay, PhonePe", "Credit or debit card", "EMI · 3 months, no cost"];
@@ -19,55 +20,89 @@ const razorpayMethod: Record<string, RazorpayCheckoutOptions["method"]> = {
   [paymentOptions[2]]: "emi",
 };
 
+type Phase = "idle" | "creatingOrder" | "inCheckout" | "verifying";
+
+const phaseHint: Partial<Record<Phase, string>> = {
+  creatingOrder: "Setting up secure checkout. This can take a few seconds.",
+  verifying: "Confirming your payment. Please keep the app open.",
+};
+
 export default function Checkout() {
   const navigation = useNavigation<RootNav>();
   const { data, update, toast } = useAppState();
   const programme = programmeById(data.programmeId);
   const gst = programme.price * 0.18;
-  const total = programme.price * 1.18;
-  const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
   const [checkout, setCheckout] = useState<RazorpayCheckoutOptions | null>(null);
+  // Once an order exists, show the server's price rather than the one computed here.
+  const [serverTotal, setServerTotal] = useState<number | null>(null);
+  const total = serverTotal ?? programme.price * 1.18;
 
   const startPayment = async () => {
-    setBusy(true);
+    setPhase("creatingOrder");
+    let order;
     try {
-      const order = await createOrder(programme.id);
+      order = await createOrder(programme.id);
+    } catch (e) {
+      setPhase("idle");
+      Alert.alert("Couldn't start payment", userMessage(e));
+      return;
+    }
+
+    const orderTotal = order.amount / 100;
+    setServerTotal(orderTotal);
+    const openCheckout = () => {
+      setPhase("inCheckout");
       setCheckout({
         order,
         description: `${programme.name} · ${programme.weeksLabel}`,
         method: razorpayMethod[data.paymentMethod],
         prefill: { name: data.consent.name || undefined },
       });
-    } catch (e) {
-      setBusy(false);
-      Alert.alert("Couldn't start payment", e instanceof Error ? e.message : "Please try again.");
+    };
+
+    if (order.amount !== Math.round(total * 100)) {
+      Alert.alert(
+        "Price updated",
+        `The total payable for ${programme.name} is ${formatInr(orderTotal)}.`,
+        [
+          { text: "Cancel", style: "cancel", onPress: () => setPhase("idle") },
+          { text: `Pay ${formatInr(orderTotal)}`, onPress: openCheckout },
+        ],
+        { cancelable: false }
+      );
+    } else {
+      openCheckout();
     }
   };
 
   const onResult = async (result: RazorpayResult) => {
     setCheckout(null);
+    // Dismissal and client-side failures never reach the server; paying again creates a new order.
     if (result.status === "dismissed") {
-      setBusy(false);
+      setPhase("idle");
       return;
     }
     if (result.status === "failed") {
-      setBusy(false);
+      setPhase("idle");
       Alert.alert("Payment failed", result.description);
       return;
     }
+
+    setPhase("verifying");
+    const reference = result.payment.razorpay_payment_id;
     try {
-      if (!(await verifyPayment(result.payment))) throw new Error("Signature mismatch");
-      update({ paymentId: result.payment.razorpay_payment_id });
-      toast.show("Payment successful");
-      navigation.navigate("Intake");
-    } catch {
-      Alert.alert(
-        "Couldn't confirm payment",
-        `If money was deducted, contact support with reference ${result.payment.razorpay_payment_id}.`
-      );
-    } finally {
-      setBusy(false);
+      await verifyPayment(result.payment);
+    } catch (e) {
+      setPhase("idle");
+      const message = e instanceof NetworkError ? VERIFY_FAILED_MESSAGE : userMessage(e);
+      Alert.alert("Couldn't confirm payment", `${message}\n\nPayment reference: ${reference}`);
+      return;
     }
+    setPhase("idle");
+    update({ paymentId: reference });
+    toast.show("Payment successful");
+    navigation.navigate("Intake");
   };
 
   return (
@@ -76,7 +111,12 @@ export default function Checkout() {
       footer={
         <>
           <RazorpayCheckoutModal options={checkout} onResult={onResult} />
-          <PillButton label={`Pay ${formatInr(total)}`} loading={busy} onPress={startPayment} />
+          <PillButton label={`Pay ${formatInr(total)}`} loading={phase !== "idle"} onPress={startPayment} />
+          {phaseHint[phase] && (
+            <Body size={13} color={colors.ink} style={{ textAlign: "center" }}>
+              {phaseHint[phase]}
+            </Body>
+          )}
           <Body size={12} style={{ textAlign: "center" }}>
             Fees are non-refundable, as set out in the consent you signed.
           </Body>

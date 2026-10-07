@@ -34,9 +34,17 @@ function buildHtml({ order, description, method, prefill }: RazorpayCheckoutOpti
   return `<!DOCTYPE html>
 <html><head><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
 <body style="background:transparent">
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
   function send(msg) { window.ReactNativeWebView.postMessage(JSON.stringify(msg)); }
+  function log() { send({ status: "log", message: Array.prototype.join.call(arguments, " ") }); }
+  window.onerror = function (m, src, line) { log("window.onerror:", m, src, line); };
+  log("html loaded, UA:", navigator.userAgent);
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"
+  onload="log('checkout.js loaded, typeof Razorpay =', typeof Razorpay)"
+  onerror="log('checkout.js FAILED to load')"></script>
+<script>
+  log("typeof Razorpay =", typeof Razorpay);
   var options = ${json};
   options.handler = function (payment) { send({ status: "success", payment: payment }); };
   options.modal = { ondismiss: function () { send({ status: "dismissed" }); } };
@@ -47,7 +55,11 @@ function buildHtml({ order, description, method, prefill }: RazorpayCheckoutOpti
     });
     rzp.open();
   } catch (e) {
-    send({ status: "failed", description: "Could not load Razorpay Checkout" });
+    log("Razorpay threw:", e && e.stack ? e.stack : e);
+    send({
+      status: "failed",
+      description: "Could not load Razorpay Checkout" + (e && e.message ? " (" + e.message + ")" : ""),
+    });
   }
 </script>
 </body></html>`;
@@ -61,11 +73,26 @@ export default function RazorpayCheckoutModal({
   onResult: (result: RazorpayResult) => void;
 }) {
   const html = useMemo(() => (options ? buildHtml(options) : ""), [options]);
+  if (options) {
+    console.log("[razorpay-webview] opening", {
+      orderId: options.order.orderId,
+      keyId: options.order.keyId,
+      amount: options.order.amount,
+      currency: options.order.currency,
+      method: options.method,
+    });
+  }
   const insets = useSafeAreaInsets();
 
   const onMessage = (e: WebViewMessageEvent) => {
     try {
-      onResult(JSON.parse(e.nativeEvent.data) as RazorpayResult);
+      const msg = JSON.parse(e.nativeEvent.data);
+      if (msg.status === "log") {
+        console.log("[razorpay-webview]", msg.message);
+        return;
+      }
+      console.log("[razorpay-webview] result:", msg.status);
+      onResult(msg as RazorpayResult);
     } catch {
       onResult({ status: "failed", description: "Unexpected response from Razorpay" });
     }
@@ -80,6 +107,9 @@ export default function RazorpayCheckoutModal({
             source={{ html, baseUrl: "https://checkout.razorpay.com" }}
             originWhitelist={["*"]}
             onMessage={onMessage}
+            onLoadEnd={() => console.log("[razorpay-webview] WebView load ended")}
+            onError={(e) => console.warn("Razorpay WebView error:", e.nativeEvent.description)}
+            onHttpError={(e) => console.warn("Razorpay WebView HTTP error:", e.nativeEvent.statusCode, e.nativeEvent.url)}
             javaScriptEnabled
             startInLoadingState
             renderLoading={() => (

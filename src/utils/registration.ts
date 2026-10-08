@@ -15,7 +15,7 @@ export interface RegistrationForm {
   lastName: string;
   email: string;
   phone: string; // 10-digit Indian mobile number, without +91
-  dateOfBirth: string; // DD/MM/YYYY as typed
+  dateOfBirth: string; // DD/MM/YYYY, set from the date picker
   gender: Gender | null;
   password: string;
   passwordConfirm: string;
@@ -60,6 +60,7 @@ export const serverFieldMap: Record<keyof RegisterRequest, RegistrationField> = 
 };
 
 export const NAME_MAX_LENGTH = 50;
+export const PASSWORD_MAX_LENGTH = 50;
 // Sign-up is India-only for now: the country code is fixed and the number is a 10-digit mobile.
 export const PHONE_COUNTRY_CODE = "+91";
 export const PHONE_DIGITS = 10;
@@ -73,10 +74,19 @@ export function phoneDigits(text: string): string {
   return digits.slice(0, PHONE_DIGITS);
 }
 
-// Inserts slashes while typing: "01011990" → "01/01/1990".
-export function formatDateInput(text: string): string {
-  const digits = text.replace(/\D/g, "").slice(0, 8);
-  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4)].filter(Boolean).join("/");
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+/** A picked date → DD/MM/YYYY, using the device's local calendar day. */
+export function formatDateOfBirth(date: Date): string {
+  return `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
+
+/** DD/MM/YYYY → a local Date for the picker, or null if it isn't a real date. */
+export function dateOfBirthToDate(text: string): Date | null {
+  const iso = parseDateOfBirth(text);
+  if (!iso) return null;
+  const [yyyy, mm, dd] = iso.split("-").map(Number);
+  return new Date(yyyy, mm - 1, dd);
 }
 
 /** DD/MM/YYYY → YYYY-MM-DD, or null if it isn't a real calendar date. */
@@ -91,7 +101,7 @@ export function parseDateOfBirth(text: string): string | null {
 
 export function passwordProblem(password: string): string | null {
   if (password.length < 8) return "Use at least 8 characters.";
-  if (password.length > 128) return "Use 128 characters or fewer.";
+  if (password.length > PASSWORD_MAX_LENGTH) return `Use ${PASSWORD_MAX_LENGTH} characters or fewer.`;
   if (!/[A-Z]/.test(password)) return "Add an uppercase letter.";
   if (!/[a-z]/.test(password)) return "Add a lowercase letter.";
   if (!/\d/.test(password)) return "Add a number.";
@@ -111,7 +121,7 @@ export function validateRegistration(form: RegistrationForm, today = new Date())
   else if (phone.length !== PHONE_DIGITS) errors.phone = `Enter all ${PHONE_DIGITS} digits of your mobile number.`;
   else if (!/^[6-9]/.test(phone)) errors.phone = "Enter a valid Indian mobile number.";
   const dob = parseDateOfBirth(form.dateOfBirth);
-  if (!dob) errors.dateOfBirth = "Enter a date as DD/MM/YYYY.";
+  if (!dob) errors.dateOfBirth = "Select your date of birth.";
   else if (dob > today.toISOString().slice(0, 10)) errors.dateOfBirth = "Date of birth can't be in the future.";
   const problem = passwordProblem(form.password);
   if (problem) errors.password = problem;

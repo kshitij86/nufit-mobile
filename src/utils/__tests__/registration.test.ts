@@ -1,5 +1,6 @@
 import {
-  formatDateInput,
+  dateOfBirthToDate,
+  formatDateOfBirth,
   parseDateOfBirth,
   passwordProblem,
   phoneDigits,
@@ -46,7 +47,7 @@ test("flags each invalid field", () => {
       lastName: " ",
       email: "priya@",
       phone: "",
-      dateOfBirth: "31/02/1992",
+      dateOfBirth: "",
       gender: null,
       password: "weak",
       passwordConfirm: "other",
@@ -85,13 +86,15 @@ test.each([
   ["STR0NG!PASS", /lowercase/],
   ["Strong!pass", /number/],
   ["Str0ngpass", /special/],
+  ["Str0ng!" + "a".repeat(44), /50 characters/],
 ])("password %s is rejected", (password, message) => {
   expect(passwordProblem(password)).toMatch(message);
 });
 
-test("date input helpers", () => {
-  expect(formatDateInput("15041992")).toBe("15/04/1992");
-  expect(formatDateInput("1504")).toBe("15/04");
+test("date of birth helpers", () => {
+  expect(formatDateOfBirth(new Date(1992, 3, 5))).toBe("05/04/1992");
+  expect(dateOfBirthToDate("05/04/1992")).toEqual(new Date(1992, 3, 5));
+  expect(dateOfBirthToDate("")).toBeNull();
   expect(parseDateOfBirth("29/02/2024")).toBe("2024-02-29");
   expect(parseDateOfBirth("29/02/2023")).toBeNull();
   expect(parseDateOfBirth("1992-04-15")).toBeNull();

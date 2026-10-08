@@ -1,11 +1,12 @@
 import React, { useRef, useState } from "react";
-import { Alert, KeyboardAvoidingView, LayoutChangeEvent, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Alert, LayoutChangeEvent, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton, { TextButton } from "../components/PillButton";
 import TextField from "../components/TextField";
+import DateField from "../components/DateField";
 import { BackButton, Body, Eyebrow, Heading } from "../components/Primitives";
 import { AccountCreatedError, useAuth } from "../state/Auth";
 import { ApiError, userMessage } from "../services/http";
@@ -13,7 +14,9 @@ import { RootNav } from "../navigation/types";
 import {
   fieldOrder,
   NAME_MAX_LENGTH,
-  formatDateInput,
+  PASSWORD_MAX_LENGTH,
+  dateOfBirthToDate,
+  formatDateOfBirth,
   genderOptions,
   PHONE_COUNTRY_CODE,
   phoneDigits,
@@ -24,6 +27,10 @@ import {
   toRegisterRequest,
   validateRegistration,
 } from "../utils/registration";
+
+// The picker opens on a typical adult birth year rather than today.
+const DOB_INITIAL = new Date(1995, 0, 1);
+const DOB_MINIMUM = new Date(1900, 0, 1);
 
 const emptyForm: RegistrationForm = {
   firstName: "",
@@ -56,11 +63,11 @@ export default function Register() {
   const [errors, setErrors] = useState<RegistrationErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [today] = useState(() => new Date());
   const firstNameRef = useRef<TextInput>(null);
   const lastNameRef = useRef<TextInput>(null);
   const emailRef = useRef<TextInput>(null);
   const phoneRef = useRef<TextInput>(null);
-  const dateOfBirthRef = useRef<TextInput>(null);
   const passwordRef = useRef<TextInput>(null);
   const passwordConfirmRef = useRef<TextInput>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -83,7 +90,6 @@ export default function Register() {
       lastName: lastNameRef,
       email: emailRef,
       phone: phoneRef,
-      dateOfBirth: dateOfBirthRef,
       password: passwordRef,
       passwordConfirm: passwordConfirmRef,
     };
@@ -132,186 +138,189 @@ export default function Register() {
   });
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScreenScaffold
-        scrollRef={scrollRef}
-        header={<BackButton />}
-        footer={
-          <>
-            <PillButton label="Create account" loading={busy} onPress={submit} />
-            <TextButton label="Already have an account? Log in" onPress={() => navigation.navigate("Login")} />
-          </>
-        }
-      >
-        <View style={{ marginBottom: 24 }}>
-          <Eyebrow>New to Nufit</Eyebrow>
-          <Heading size={28}>Create your account</Heading>
-        </View>
+    <ScreenScaffold
+      scrollRef={scrollRef}
+      header={<BackButton />}
+      footer={
+        <>
+          <PillButton label="Create account" loading={busy} onPress={submit} />
+          <TextButton label="Already have an account? Log in" onPress={() => navigation.navigate("Login")} />
+        </>
+      }
+    >
+      <View style={{ marginBottom: 24 }}>
+        <Eyebrow>New to Nufit</Eyebrow>
+        <Heading size={28}>Create your account</Heading>
+      </View>
 
-        <View style={{ gap: 16 }} onLayout={(e) => (fieldsY.current = e.nativeEvent.layout.y)}>
-          <View style={{ flexDirection: "row", gap: 12 }} onLayout={(e) => recordY(e, "firstName", "lastName")}>
-            <View style={{ flex: 1 }}>
-              <TextField
-                ref={firstNameRef}
-                label="First name"
-                {...field("firstName")}
-                autoComplete="given-name"
-                textContentType="givenName"
-                maxLength={NAME_MAX_LENGTH}
-                returnKeyType="next"
-                onSubmitEditing={() => lastNameRef.current?.focus()}
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <TextField
-                ref={lastNameRef}
-                label="Last name"
-                {...field("lastName")}
-                autoComplete="family-name"
-                textContentType="familyName"
-                maxLength={NAME_MAX_LENGTH}
-                returnKeyType="next"
-                onSubmitEditing={() => emailRef.current?.focus()}
-              />
-            </View>
-          </View>
-          <View onLayout={(e) => recordY(e, "email")}>
+      <View style={{ gap: 16 }} onLayout={(e) => (fieldsY.current = e.nativeEvent.layout.y)}>
+        <View style={{ flexDirection: "row", gap: 12 }} onLayout={(e) => recordY(e, "firstName", "lastName")}>
+          <View style={{ flex: 1 }}>
             <TextField
-              ref={emailRef}
-              label="Email"
-              {...field("email")}
-              placeholder="you@example.com"
-              autoCapitalize="none"
-              autoCorrect={false}
-              autoComplete="email"
-              keyboardType="email-address"
-              textContentType="emailAddress"
+              ref={firstNameRef}
+              label="First name"
+              {...field("firstName")}
+              autoComplete="given-name"
+              textContentType="givenName"
+              maxLength={NAME_MAX_LENGTH}
               returnKeyType="next"
-              onSubmitEditing={() => phoneRef.current?.focus()}
+              onSubmitEditing={() => lastNameRef.current?.focus()}
             />
           </View>
-          <View onLayout={(e) => recordY(e, "phone")}>
+          <View style={{ flex: 1 }}>
             <TextField
-              ref={phoneRef}
-              label="Phone number"
-              {...field("phone")}
-              onChangeText={(text) => set("phone", phoneDigits(text))}
-              prefix={
-                <View
+              ref={lastNameRef}
+              label="Last name"
+              {...field("lastName")}
+              autoComplete="family-name"
+              textContentType="familyName"
+              maxLength={NAME_MAX_LENGTH}
+              returnKeyType="next"
+              onSubmitEditing={() => emailRef.current?.focus()}
+            />
+          </View>
+        </View>
+        <View onLayout={(e) => recordY(e, "email")}>
+          <TextField
+            ref={emailRef}
+            label="Email"
+            {...field("email")}
+            placeholder="you@example.com"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+            returnKeyType="next"
+            onSubmitEditing={() => phoneRef.current?.focus()}
+          />
+        </View>
+        <View onLayout={(e) => recordY(e, "phone")}>
+          <TextField
+            ref={phoneRef}
+            label="Phone number"
+            {...field("phone")}
+            onChangeText={(text) => set("phone", phoneDigits(text))}
+            prefix={
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                  paddingLeft: 14,
+                  paddingRight: 12,
+                  alignSelf: "stretch",
+                  borderRightWidth: 1,
+                  borderRightColor: colors.hairline,
+                }}
+              >
+                <Text style={{ fontSize: 18 }}>🇮🇳</Text>
+                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.ink }}>
+                  {PHONE_COUNTRY_CODE}
+                </Text>
+              </View>
+            }
+            placeholder="98765 43210"
+            autoComplete="tel-national"
+            keyboardType="number-pad"
+            textContentType="telephoneNumber"
+          />
+        </View>
+        <View onLayout={(e) => recordY(e, "dateOfBirth")}>
+          <DateField
+            label="Date of birth"
+            value={dateOfBirthToDate(form.dateOfBirth)}
+            onChange={(date) => set("dateOfBirth", formatDateOfBirth(date))}
+            format={formatDateOfBirth}
+            placeholder="DD/MM/YYYY"
+            initialDate={DOB_INITIAL}
+            minimumDate={DOB_MINIMUM}
+            maximumDate={today}
+            error={errors.dateOfBirth}
+            disabled={busy}
+          />
+        </View>
+
+        <View style={{ gap: 8 }} onLayout={(e) => recordY(e, "gender")}>
+          <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 13, color: colors.secondary }}>
+            Gender <Text style={{ color: colors.muted, fontFamily: "Nunito_600SemiBold" }}>· optional</Text>
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {genderOptions.map((opt) => {
+              const selected = form.gender === opt.id;
+              return (
+                <Pressable
+                  key={opt.id}
+                  disabled={busy}
+                  onPress={() => set("gender", selected ? null : opt.id)}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 6,
-                    paddingLeft: 14,
-                    paddingRight: 12,
-                    alignSelf: "stretch",
-                    borderRightWidth: 1,
-                    borderRightColor: colors.hairline,
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 999,
+                    borderWidth: 1.5,
+                    borderColor: selected ? colors.orange : colors.hairline,
+                    backgroundColor: selected ? colors.orangeTint : colors.card,
                   }}
                 >
-                  <Text style={{ fontSize: 18 }}>🇮🇳</Text>
-                  <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.ink }}>
-                    {PHONE_COUNTRY_CODE}
-                  </Text>
-                </View>
-              }
-              placeholder="98765 43210"
-              autoComplete="tel-national"
-              keyboardType="number-pad"
-              textContentType="telephoneNumber"
-            />
-          </View>
-          <View onLayout={(e) => recordY(e, "dateOfBirth")}>
-            <TextField
-              ref={dateOfBirthRef}
-              label="Date of birth"
-              {...field("dateOfBirth")}
-              onChangeText={(text) => set("dateOfBirth", formatDateInput(text))}
-              placeholder="DD/MM/YYYY"
-              keyboardType="number-pad"
-              maxLength={10}
-            />
-          </View>
-
-          <View style={{ gap: 8 }} onLayout={(e) => recordY(e, "gender")}>
-            <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 13, color: colors.secondary }}>
-              Gender <Text style={{ color: colors.muted, fontFamily: "Nunito_600SemiBold" }}>· optional</Text>
-            </Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              {genderOptions.map((opt) => {
-                const selected = form.gender === opt.id;
-                return (
-                  <Pressable
-                    key={opt.id}
-                    disabled={busy}
-                    onPress={() => set("gender", selected ? null : opt.id)}
+                  <Text
                     style={{
-                      paddingVertical: 10,
-                      paddingHorizontal: 16,
-                      borderRadius: 999,
-                      borderWidth: 1.5,
-                      borderColor: selected ? colors.orange : colors.hairline,
-                      backgroundColor: selected ? colors.orangeTint : colors.card,
+                      fontFamily: selected ? "Nunito_700Bold" : "Nunito_600SemiBold",
+                      color: colors.ink,
+                      fontSize: 14,
                     }}
                   >
-                    <Text
-                      style={{
-                        fontFamily: selected ? "Nunito_700Bold" : "Nunito_600SemiBold",
-                        color: colors.ink,
-                        fontSize: 14,
-                      }}
-                    >
-                      {opt.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          <View onLayout={(e) => recordY(e, "password")}>
-            <TextField
-              ref={passwordRef}
-              label="Password"
-              {...field("password")}
-              hint="8+ characters with upper and lower case, a number and a symbol."
-              secureTextEntry
-              autoCapitalize="none"
-              autoComplete="new-password"
-              textContentType="newPassword"
-              returnKeyType="next"
-              onSubmitEditing={() => passwordConfirmRef.current?.focus()}
-            />
-          </View>
-          <View onLayout={(e) => recordY(e, "passwordConfirm")}>
-            <TextField
-              ref={passwordConfirmRef}
-              label="Confirm password"
-              {...field("passwordConfirm")}
-              secureTextEntry
-              autoCapitalize="none"
-              autoComplete="new-password"
-              textContentType="newPassword"
-              returnKeyType="go"
-              onSubmitEditing={submit}
-            />
+                    {opt.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
 
-        {formError && (
-          <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", marginTop: 16 }}>
-            <Ionicons name="alert-circle" size={18} color={colors.coralInk} style={{ marginTop: 2 }} />
-            <Body color={colors.coralInk} size={14} style={{ flex: 1 }}>
-              {formError}
-            </Body>
-          </View>
-        )}
-        {busy && (
-          <Body size={13} style={{ marginTop: 16 }}>
-            Creating your account. This can take a few seconds.
+        <View onLayout={(e) => recordY(e, "password")}>
+          <TextField
+            ref={passwordRef}
+            label="Password"
+            {...field("password")}
+            hint="8+ characters with upper and lower case, a number and a symbol."
+            maxLength={PASSWORD_MAX_LENGTH}
+            secureTextEntry
+            autoCapitalize="none"
+            autoComplete="new-password"
+            textContentType="newPassword"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordConfirmRef.current?.focus()}
+          />
+        </View>
+        <View onLayout={(e) => recordY(e, "passwordConfirm")}>
+          <TextField
+            ref={passwordConfirmRef}
+            label="Confirm password"
+            {...field("passwordConfirm")}
+            maxLength={PASSWORD_MAX_LENGTH}
+            secureTextEntry
+            autoCapitalize="none"
+            autoComplete="new-password"
+            textContentType="newPassword"
+            returnKeyType="go"
+            onSubmitEditing={submit}
+          />
+        </View>
+      </View>
+
+      {formError && (
+        <View style={{ flexDirection: "row", gap: 8, alignItems: "flex-start", marginTop: 16 }}>
+          <Ionicons name="alert-circle" size={18} color={colors.coralInk} style={{ marginTop: 2 }} />
+          <Body color={colors.coralInk} size={14} style={{ flex: 1 }}>
+            {formError}
           </Body>
-        )}
-      </ScreenScaffold>
-    </KeyboardAvoidingView>
+        </View>
+      )}
+      {busy && (
+        <Body size={13} style={{ marginTop: 16 }}>
+          Creating your account. This can take a few seconds.
+        </Body>
+      )}
+    </ScreenScaffold>
   );
 }

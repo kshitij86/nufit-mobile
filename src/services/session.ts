@@ -75,13 +75,39 @@ export async function register(request: RegisterRequest) {
   });
 }
 
-// Clears local tokens straight away; revoking the refresh token server-side is best effort.
-export async function logOut() {
-  const refreshToken = tokens?.refresh;
-  await clearSession();
-  if (refreshToken) {
-    postJson(`${AUTH_BASE_URL}/logout`, { refresh_token: refreshToken }, { timeoutMs: 10_000 }).catch(() => {});
+const isUnauthorized = (e: unknown) => e instanceof ApiError && e.status === 401;
+
+const LOGOUT_TIMEOUT_MS = 10_000;
+
+// Revokes the refresh token server-side. /logout needs a valid access token, so if it has expired,
+// trade the refresh token for a new pair (which revokes the old refresh token) and revoke that instead.
+// Access tokens are short-lived JWTs the server can't revoke; deleting them locally is what ends them.
+export async function revokeSession(accessToken: string, refreshToken: string): Promise<void> {
+  const logout = (access: string, refresh: string) =>
+    postJson(`${AUTH_BASE_URL}/logout`, { refresh_token: refresh }, { token: access, timeoutMs: LOGOUT_TIMEOUT_MS });
+  try {
+    await logout(accessToken, refreshToken);
+    return;
+  } catch (e) {
+    if (!isUnauthorized(e)) return;
   }
+  try {
+    const pair = await postJson<TokenPair>(
+      `${AUTH_BASE_URL}/refresh`,
+      { refresh_token: refreshToken },
+      { timeoutMs: LOGOUT_TIMEOUT_MS }
+    );
+    if (pair?.access_token && pair?.refresh_token) await logout(pair.access_token, pair.refresh_token);
+  } catch {
+    // The refresh token was already invalid, or the server is unreachable: nothing more to do.
+  }
+}
+
+// Clears local tokens straight away so the user is signed out at once; revocation is best effort.
+export async function logOut() {
+  const current = tokens;
+  await clearSession();
+  if (current) revokeSession(current.access, current.refresh).catch(() => {});
 }
 
 // Resolves false when the server rejects the refresh token. Network and server errors propagate,
@@ -104,8 +130,6 @@ function refreshTokens(): Promise<boolean> {
   }
   return refreshing;
 }
-
-const isUnauthorized = (e: unknown) => e instanceof ApiError && e.status === 401;
 
 // POST with the access token. On a 401, refreshes once and retries once; if that fails the
 // session is cleared, listeners are told, and SessionExpiredError is thrown.

@@ -1,7 +1,16 @@
 import * as SecureStore from "expo-secure-store";
 import { API_HOST } from "../../config";
 import { ApiError } from "../http";
-import { authPost, loadSession, logIn, logOut, onSessionExpired, register, SessionExpiredError } from "../session";
+import {
+  authPost,
+  loadSession,
+  logIn,
+  logOut,
+  onSessionExpired,
+  register,
+  revokeSession,
+  SessionExpiredError,
+} from "../session";
 import { FetchMock, jsonResponse, mockFetch, requestOf, tokens } from "../../test/fetchMock";
 
 jest.mock("expo-secure-store", () => {
@@ -127,9 +136,39 @@ test("logOut clears tokens and revokes the refresh token", async () => {
 
   expect(requestOf(fetchMock, 0)).toMatchObject({
     url: `${API_HOST}/api/v1/auth/logout`,
+    authorization: "Bearer access-1",
     body: { refresh_token: "refresh-1" },
   });
   expect(await loadSession()).toBe(false);
+});
+
+test("revokeSession refreshes and revokes the new refresh token when the access token has expired", async () => {
+  fetchMock
+    .mockResolvedValueOnce(jsonResponse(401, { detail: "Token expired" }))
+    .mockResolvedValueOnce(jsonResponse(200, tokens("2")))
+    .mockResolvedValueOnce(jsonResponse(200, { message: "Logged out" }));
+
+  await revokeSession("access-1", "refresh-1");
+
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+  expect(requestOf(fetchMock, 1)).toMatchObject({
+    url: `${API_HOST}/api/v1/auth/refresh`,
+    body: { refresh_token: "refresh-1" },
+  });
+  expect(requestOf(fetchMock, 2)).toMatchObject({
+    url: `${API_HOST}/api/v1/auth/logout`,
+    authorization: "Bearer access-2",
+    body: { refresh_token: "refresh-2" },
+  });
+});
+
+test("revokeSession gives up quietly when the refresh token is already invalid", async () => {
+  fetchMock
+    .mockResolvedValueOnce(jsonResponse(401, { detail: "Token expired" }))
+    .mockResolvedValueOnce(jsonResponse(401, { detail: "Invalid refresh token" }));
+
+  await expect(revokeSession("access-1", "refresh-1")).resolves.toBeUndefined();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
 });
 
 test("logOut still signs out locally when revocation fails", async () => {

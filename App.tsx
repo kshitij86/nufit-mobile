@@ -20,7 +20,7 @@ import {
 } from "@expo-google-fonts/nunito";
 
 import { AppStateProvider } from "./src/state/AppState";
-import { AuthProvider } from "./src/state/Auth";
+import { AuthProvider, useAuth } from "./src/state/Auth";
 import RootNavigator from "./src/navigation/RootNavigator";
 import Toast from "./src/components/Toast";
 import QuickLogSheet from "./src/components/QuickLogSheet";
@@ -28,6 +28,12 @@ import AppSplash from "./src/components/AppSplash";
 import { colors } from "./src/theme/colors";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+// Remounts the app's in-memory state per session, so logging out leaves nothing of the previous user behind.
+function SessionAppState({ children }: { children: React.ReactNode }) {
+  const { status } = useAuth();
+  return <AppStateProvider key={status === "signedIn" ? "signedIn" : "signedOut"}>{children}</AppStateProvider>;
+}
 
 const navTheme = {
   ...DefaultTheme,
@@ -58,7 +64,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AppStateProvider>
+        <SessionAppState>
           <View style={{ flex: 1 }}>
             <NavigationContainer theme={navTheme}>
               <RootNavigator />
@@ -68,7 +74,7 @@ export default function App() {
             {!splashDone && <AppSplash onLayout={onSplashLayout} onFinish={onSplashFinish} />}
             <StatusBar style="dark" />
           </View>
-        </AppStateProvider>
+        </SessionAppState>
       </AuthProvider>
     </SafeAreaProvider>
   );

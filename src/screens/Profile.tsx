@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { Alert, View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
@@ -15,6 +15,11 @@ export default function Profile() {
   const { data } = useAppState();
   const { signOut } = useAuth();
   const programme = programmeById(data.programmeId);
+  const confirmLogOut = () =>
+    Alert.alert("Log out?", "You'll need to log in again to use Nufit on this device.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Log out", style: "destructive", onPress: () => void signOut() },
+    ]);
   const initials = data.profileName.split(" ").map((n) => n[0]).join("").slice(0, 2);
 
   const links: { label: string; meta: string; screen: keyof import("../navigation/types").RootStackParamList }[] = [
@@ -65,10 +70,12 @@ export default function Profile() {
           </Pressable>
         ))}
         <Pressable
-          onPress={signOut}
-          style={{ paddingVertical: 18 }}
+          onPress={confirmLogOut}
+          accessibilityRole="button"
+          style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 18 }}
         >
-          <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.orange }}>Sign out</Text>
+          <Ionicons name="log-out-outline" size={18} color={colors.orange} />
+          <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.orange }}>Log out</Text>
         </Pressable>
       </View>
     </ScreenScaffold>

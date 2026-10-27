@@ -2,6 +2,7 @@ import * as SecureStore from "expo-secure-store";
 import { API_HOST } from "../../config";
 import { ApiError } from "../http";
 import {
+  authGet,
   authPost,
   loadSession,
   logIn,
@@ -59,6 +60,18 @@ test("sends the bearer token", async () => {
   fetchMock.mockResolvedValueOnce(jsonResponse(200, { ok: true }));
   await expect(authPost(URL, { a: 1 })).resolves.toEqual({ ok: true });
   expect(requestOf(fetchMock, 0).authorization).toBe("Bearer access-1");
+});
+
+test("authGet sends the bearer token without a body and retries after a refresh", async () => {
+  fetchMock
+    .mockResolvedValueOnce(jsonResponse(401, { detail: "Token expired" }))
+    .mockResolvedValueOnce(jsonResponse(200, tokens("2")))
+    .mockResolvedValueOnce(jsonResponse(200, { ok: true }));
+
+  await expect(authGet(URL)).resolves.toEqual({ ok: true });
+
+  expect(requestOf(fetchMock, 0)).toMatchObject({ url: URL, method: "GET", authorization: "Bearer access-1", body: undefined });
+  expect(requestOf(fetchMock, 2)).toMatchObject({ url: URL, method: "GET", authorization: "Bearer access-2" });
 });
 
 test("on 401, refreshes once, stores the new pair and retries with the new token", async () => {

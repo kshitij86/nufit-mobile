@@ -3,11 +3,12 @@ import { CircleMessage, IntakeAnswers, MeasureValues, MoodId } from "../types";
 import { initialCircleMessages } from "../data/circle";
 import { baseSchedule } from "../data/schedule";
 
+export type PhotoConsent = "none" | "faceHidden" | "faceShown";
+
 export interface ConsentData {
+  /** The signed-in user's name, filled in from their profile when they sign. */
   name: string;
-  address: string;
-  photoConsent: "agree" | "disagree";
-  faceConsent: "without" | "show";
+  photoConsent: PhotoConsent;
   signature: string;
 }
 
@@ -57,7 +58,7 @@ interface AppData {
 const initialData: AppData = {
   quizAnswers: {},
   programmeId: "reset360",
-  consent: { name: "", address: "", photoConsent: "agree", faceConsent: "without", signature: "" },
+  consent: { name: "", photoConsent: "faceHidden", signature: "" },
   paymentMethod: "UPI · GPay, PhonePe",
   paymentId: null,
   intake: emptyIntake,

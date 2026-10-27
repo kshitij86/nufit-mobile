@@ -7,12 +7,15 @@ import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton from "../components/PillButton";
 import { Body, Card, Divider, Heading } from "../components/Primitives";
 import { measureSites } from "../data/measureSites";
-import { useAppState } from "../state/AppState";
+import ResourceState from "../components/ResourceState";
+import { useMeasurements } from "../services/measurements";
+import { formatDay, formatInchesChange } from "../utils/format";
 import { RootNav } from "../navigation/types";
 
 export default function MeasureDone() {
   const navigation = useNavigation<RootNav>();
-  const { data } = useAppState();
+  const history = useMeasurements();
+  const [latest, previous] = history.data ?? [];
   const [scale] = useState(() => new Animated.Value(0.7));
 
   useEffect(() => {
@@ -43,24 +46,34 @@ export default function MeasureDone() {
         <Ionicons name="checkmark" size={32} color="#fff" />
       </Animated.View>
 
-      <Heading size={24}>Baseline saved</Heading>
+      <Heading size={24}>{previous ? "Measurements saved" : "Baseline saved"}</Heading>
       <Body style={{ marginTop: 10, marginBottom: 20 }}>
-        These six numbers are what your fortnightly review is measured against. Re-measure at the same time
-        of day, on the same day of the week.
+        {previous
+          ? `Compared with your last entry on ${formatDay(previous.createdOn)}. Re-measure at the same time of day, on the same day of the week.`
+          : "These six numbers are what your fortnightly review is measured against. Re-measure at the same time of day, on the same day of the week."}
       </Body>
 
       <Card>
-        {measureSites.map((site, i) => (
-          <View key={site.id}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 12 }}>
-              <Text style={{ fontFamily: "Nunito_700Bold", color: colors.ink, fontSize: 15 }}>{site.name}</Text>
-              <Text style={{ fontFamily: "Outfit_700Bold", color: colors.orangeDark, fontSize: 15 }}>
-                {data.measurements[site.id] ?? "—"} in
-              </Text>
+        {!latest ? (
+          <ResourceState resource={history} />
+        ) : (
+          measureSites.map((site, i) => (
+            <View key={site.id}>
+              <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 12 }}>
+                <Text style={{ fontFamily: "Nunito_700Bold", color: colors.ink, fontSize: 15, flex: 1 }}>{site.name}</Text>
+                {previous && (
+                  <Text style={{ fontFamily: "Nunito_700Bold", color: colors.muted, fontSize: 13, marginRight: 12 }}>
+                    {formatInchesChange(latest.sites[site.id] - previous.sites[site.id])}
+                  </Text>
+                )}
+                <Text style={{ fontFamily: "Outfit_700Bold", color: colors.orangeDark, fontSize: 15 }}>
+                  {latest.sites[site.id].toFixed(1)} in
+                </Text>
+              </View>
+              {i < measureSites.length - 1 && <Divider />}
             </View>
-            {i < measureSites.length - 1 && <Divider />}
-          </View>
-        ))}
+          ))
+        )}
       </Card>
     </ScreenScaffold>
   );

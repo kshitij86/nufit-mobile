@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
@@ -7,12 +7,19 @@ import PillButton from "../components/PillButton";
 import { Body, Card, Eyebrow, Heading } from "../components/Primitives";
 import { moodOptions, moodTags } from "../data/moods";
 import { useAppState } from "../state/AppState";
+import { useAuth } from "../state/Auth";
+import { submitCheckIn } from "../services/checkins";
+import { userMessage } from "../services/http";
+import { useProgrammeStatus } from "../services/journey";
 import { RootNav } from "../navigation/types";
 import { MoodId } from "../types";
 
 export default function Mood() {
   const navigation = useNavigation<RootNav>();
   const { data, update, toast } = useAppState();
+  const { user } = useAuth();
+  const status = useProgrammeStatus().data;
+  const [submitting, setSubmitting] = useState(false);
 
   const selected = data.mood;
   const selectedMood = moodOptions.find((m) => m.id === selected);
@@ -22,7 +29,17 @@ export default function Mood() {
     update({ moodTags: has ? data.moodTags.filter((t) => t !== tag) : [...data.moodTags, tag] });
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
+    if (!selected) return;
+    setSubmitting(true);
+    try {
+      await submitCheckIn({ mood: selected, tags: data.moodTags });
+    } catch (e) {
+      toast.show(userMessage(e));
+      return;
+    } finally {
+      setSubmitting(false);
+    }
     toast.show("Today reshaped around how you feel");
     navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
   };
@@ -30,11 +47,11 @@ export default function Mood() {
   return (
     <ScreenScaffold
       footer={
-        <PillButton label="Shape my day" disabled={!selected} onPress={onSubmit} />
+        <PillButton label="Shape my day" disabled={!selected} loading={submitting} onPress={onSubmit} />
       }
     >
-      <Eyebrow>Tuesday · Day 26</Eyebrow>
-      <Heading size={24}>Before we plan the day — how are you, {data.profileName.split(" ")[0]}?</Heading>
+      {status && <Eyebrow>{status.weekday} · Day {status.day}</Eyebrow>}
+      <Heading size={24}>Before we plan the day — how are you{user ? `, ${user.firstName}` : ""}?</Heading>
       <Body style={{ marginTop: 10, marginBottom: 20 }}>
         Honest beats impressive. Today reshapes itself around this.
       </Body>

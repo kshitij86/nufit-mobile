@@ -6,46 +6,52 @@ import { colors } from "../../theme/colors";
 import ScreenScaffold from "../../components/ScreenScaffold";
 import TopBar from "../../components/TopBar";
 import { Body, Card } from "../../components/Primitives";
-import { sessions } from "../../data/sessions";
+import ResourceState from "../../components/ResourceState";
+import { useWeekSessions } from "../../services/workouts";
 import { TabNav } from "../../navigation/types";
 import { useAppState } from "../../state/AppState";
 
 export default function Move() {
   const navigation = useNavigation<TabNav>();
   const { data } = useAppState();
-  const featured = sessions[0];
+  const sessions = useWeekSessions();
+  const week = sessions.data ?? [];
+  const featured = week[0];
   const hasKneePain = data.intake.limits.includes("Knees");
 
   return (
     <ScreenScaffold header={<TopBar title="Move" subtitle="This week's movement" />}>
-      <Card bg={colors.sky} style={{ marginTop: 14, marginBottom: 14 }}>
-        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.skyInk, marginBottom: 8 }}>
-          Today’s session
-        </Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 19, color: colors.ink, marginBottom: 4 }}>
-              {featured.name}
-            </Text>
-            <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.skyInk }}>
-              {featured.kind} · {featured.minutes} min · {featured.kit}
-            </Text>
+      {!sessions.data && <ResourceState resource={sessions} />}
+      {featured && (
+        <Card bg={colors.sky} style={{ marginTop: 14, marginBottom: 14 }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.skyInk, marginBottom: 8 }}>
+            Today’s session
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 19, color: colors.ink, marginBottom: 4 }}>
+                {featured.name}
+              </Text>
+              <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.skyInk }}>
+                {featured.kind} · {featured.minutes} min · {featured.kit}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => navigation.navigate("Player", { sessionId: featured.id })}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: colors.skyStrong,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="play" size={24} color="#fff" />
+            </Pressable>
           </View>
-          <Pressable
-            onPress={() => navigation.navigate("Player", { sessionId: featured.id })}
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: colors.skyStrong,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="play" size={24} color="#fff" />
-          </Pressable>
-        </View>
-      </Card>
+        </Card>
+      )}
 
       {hasKneePain && (
         <Card bg={colors.amberTint} style={{ marginBottom: 14 }}>
@@ -57,10 +63,10 @@ export default function Move() {
       )}
 
       <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: colors.muted, marginBottom: 10 }}>
-        This week · 4 sessions
+        This week · {week.length} {week.length === 1 ? "session" : "sessions"}
       </Text>
       <View style={{ gap: 10, marginBottom: 18 }}>
-        {sessions.map((s) => (
+        {week.map((s) => (
           <Pressable
             key={s.id}
             onPress={() => navigation.navigate("Player", { sessionId: s.id })}

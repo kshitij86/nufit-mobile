@@ -5,3 +5,4 @@ export const API_HOST = (process.env.EXPO_PUBLIC_API_HOST || DEFAULT_API_HOST).r
 export const AUTH_BASE_URL = `${API_HOST}/api/v1/auth`;
 export const PAYMENTS_BASE_URL = `${API_HOST}/api/v1/payments`;
 export const USERS_BASE_URL = `${API_HOST}/api/v1/users`;
+export const ORDERS_BASE_URL = `${API_HOST}/api/v1/orders`;

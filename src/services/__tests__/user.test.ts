@@ -24,7 +24,16 @@ beforeEach(async () => {
 
 test("loads the signed-in user's name from /users/me", async () => {
   fetchMock.mockResolvedValueOnce(
-    jsonResponse(200, { email: "priya@example.com", first_name: " Priya ", last_name: "Sharma", id: "u1" })
+    jsonResponse(200, {
+      email: "priya@example.com",
+      first_name: " Priya ",
+      last_name: "Sharma",
+      phone_number: "+919800000040",
+      date_of_birth: "1992-07-19",
+      gender: null,
+      id: "u1",
+      created_at: "2026-06-23T10:00:00+05:30",
+    })
   );
 
   await expect(fetchCurrentUser()).resolves.toEqual({
@@ -32,6 +41,9 @@ test("loads the signed-in user's name from /users/me", async () => {
     firstName: "Priya",
     lastName: "Sharma",
     fullName: "Priya Sharma",
+    phoneNumber: "+919800000040",
+    dateOfBirth: "1992-07-19",
+    createdAt: "2026-06-23T10:00:00+05:30",
   });
   expect(requestOf(fetchMock, 0)).toMatchObject({
     url: `${API_HOST}/api/v1/users/me`,

@@ -5,7 +5,9 @@ import { colors } from "../../theme/colors";
 import ScreenScaffold from "../../components/ScreenScaffold";
 import TopBar from "../../components/TopBar";
 import { Body, Card, CheckBadge, ProgressBar } from "../../components/Primitives";
-import { scheduleForMood, timelineBands } from "../../data/schedule";
+import ResourceState from "../../components/ResourceState";
+import { useTodayPlan } from "../../services/diet";
+import { useProgrammeStatus } from "../../services/journey";
 import { moodById } from "../../data/moods";
 import { useAppState } from "../../state/AppState";
 import { TabNav } from "../../navigation/types";
@@ -14,11 +16,13 @@ export default function Today() {
   const navigation = useNavigation<TabNav>();
   const { data, toggleDayTask } = useAppState();
   const mood = moodById(data.mood);
-  const items = scheduleForMood(data.mood);
+  const plan = useTodayPlan(data.mood);
+  const status = useProgrammeStatus().data;
+  const items = plan.data?.items ?? [];
   const doneCount = items.filter((i) => data.dayTasksDone[i.id]).length;
 
   return (
-    <ScreenScaffold header={<TopBar title="Today" subtitle="Tuesday · Day 26" />}>
+    <ScreenScaffold header={<TopBar title="Today" subtitle={status ? `${status.weekday} · Day ${status.day}` : ""} />}>
       <Pressable onPress={() => navigation.navigate("Mood")}>
         <Card bg={mood.bg} style={{ marginTop: 14, marginBottom: 14 }}>
           <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.ink, marginBottom: 6 }}>
@@ -37,7 +41,7 @@ export default function Today() {
           <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 20, color: colors.ink, marginBottom: 10 }}>
             {doneCount} of {items.length} done
           </Text>
-          <ProgressBar progress={doneCount / items.length} />
+          <ProgressBar progress={items.length ? doneCount / items.length : 0} />
         </Card>
         <Card style={{ flex: 1 }}>
           <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 12, color: colors.muted, marginBottom: 8 }}>Water</Text>
@@ -48,7 +52,8 @@ export default function Today() {
         </Card>
       </View>
 
-      {timelineBands.map((band) => {
+      {!plan.data && <ResourceState resource={plan} />}
+      {plan.data?.bands.map((band) => {
         const bandItems = items.filter((i) => i.band === band);
         if (bandItems.length === 0) return null;
         return (
@@ -121,15 +126,16 @@ export default function Today() {
         );
       })}
 
-      <Card bg={colors.sage} style={{ marginBottom: 14 }}>
-        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.sageInk, marginBottom: 6 }}>
-          Note from Dr. Kanika
-        </Text>
-        <Body color={colors.sageInk} size={14}>
-          Evening hunger noted twice this week — roasted chana goes up to 30 g from today. Keep dinner before
-          8:30 pm.
-        </Body>
-      </Card>
+      {plan.data?.note && (
+        <Card bg={colors.sage} style={{ marginBottom: 14 }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.sageInk, marginBottom: 6 }}>
+            Note from {plan.data.note.author}
+          </Text>
+          <Body color={colors.sageInk} size={14}>
+            {plan.data.note.text}
+          </Body>
+        </Card>
+      )}
 
       <Pressable onPress={() => navigation.navigate("Circle")}>
         <Card bg={colors.lilac}>

@@ -5,15 +5,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import PillButton from "../components/PillButton";
-import { useAppState } from "../state/AppState";
-import { streakWeek } from "../data/journey";
+import ResourceState from "../components/ResourceState";
+import { useStreak } from "../services/journey";
 import { RootNav } from "../navigation/types";
 
 const dotColor = { full: colors.orange, partial: colors.amberStrong, missed: colors.hairline };
 
 export default function Streak() {
   const navigation = useNavigation<RootNav>();
-  const { data } = useAppState();
+  const streakResource = useStreak();
+  const streak = streakResource.data;
   const [pulse] = useState(() => new Animated.Value(1));
 
   useEffect(() => {
@@ -38,35 +39,40 @@ export default function Streak() {
         </Pressable>
 
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Animated.View
-            style={{
-              width: 180,
-              height: 180,
-              borderRadius: 90,
-              backgroundColor: colors.orange,
-              alignItems: "center",
-              justifyContent: "center",
-              transform: [{ scale: pulse }],
-              marginBottom: 26,
-            }}
-          >
-            <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 56, color: "#fff" }}>{data.streak}</Text>
-            <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 14, color: "#fff" }}>steady days</Text>
-          </Animated.View>
+          {!streak ? (
+            <ResourceState resource={streakResource} />
+          ) : (
+            <>
+              <Animated.View
+                style={{
+                  width: 180,
+                  height: 180,
+                  borderRadius: 90,
+                  backgroundColor: colors.orange,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transform: [{ scale: pulse }],
+                  marginBottom: 26,
+                }}
+              >
+                <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 56, color: "#fff" }}>{streak.days}</Text>
+                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 14, color: "#fff" }}>steady days</Text>
+              </Animated.View>
 
-          <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 24, color: colors.ink, textAlign: "center", marginBottom: 12 }}>
-            Twenty-six days of showing up.
-          </Text>
-          <Text style={{ fontFamily: "Nunito_400Regular", fontSize: 15, color: colors.secondary, textAlign: "center", lineHeight: 22, marginBottom: 22 }}>
-            Not perfect days — steady ones. You have missed four, and none of them back to back. That is
-            exactly what makes results hold.
-          </Text>
+              <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 24, color: colors.ink, textAlign: "center", marginBottom: 12 }}>
+                {streak.headline}
+              </Text>
+              <Text style={{ fontFamily: "Nunito_400Regular", fontSize: 15, color: colors.secondary, textAlign: "center", lineHeight: 22, marginBottom: 22 }}>
+                {streak.body}
+              </Text>
 
-          <View style={{ flexDirection: "row", gap: 8 }}>
-            {streakWeek.map((s, i) => (
-              <View key={i} style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: dotColor[s] }} />
-            ))}
-          </View>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {streak.week.map((s, i) => (
+                  <View key={i} style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: dotColor[s] }} />
+                ))}
+              </View>
+            </>
+          )}
         </View>
 
         <View style={{ paddingBottom: 20 }}>

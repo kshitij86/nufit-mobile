@@ -126,8 +126,6 @@ export interface CircleMessage {
   text: string;
 }
 
-export type MeasureValues = Partial<Record<MeasureSiteId, number>>;
-
 export interface IntakeAnswers {
   name: string;
   age: string;

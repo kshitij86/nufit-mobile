@@ -20,6 +20,7 @@ import {
   useMeasurements,
 } from "../services/measurements";
 import { MeasureSiteId } from "../types";
+import { decimalInput } from "../utils/numericInput";
 
 export default function Measure() {
   const navigation = useNavigation<RootNav>();
@@ -40,7 +41,7 @@ export default function Measure() {
   const willSave = nextInvalid < 0 && (isLast || rejected);
 
   const setValue = (text: string) => {
-    setValues((v) => ({ ...v, [site.id]: text }));
+    setValues((v) => ({ ...v, [site.id]: decimalInput(text) }));
     setSiteErrors((e) => ({ ...e, [site.id]: undefined }));
   };
 

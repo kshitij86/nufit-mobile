@@ -11,12 +11,13 @@ import { userMessage } from "../services/http";
 import { submitIntake } from "../services/intake";
 import { RootNav } from "../navigation/types";
 import { bmiLabel, computeBmi } from "../utils/format";
+import { decimalInput, wholeNumberInput } from "../utils/numericInput";
 
 function FieldInput({ value, onChangeText, placeholder, keyboardType }: {
   value: string;
   onChangeText: (t: string) => void;
   placeholder: string;
-  keyboardType?: "default" | "numeric";
+  keyboardType?: "default" | "number-pad";
 }) {
   return (
     <TextInput
@@ -153,9 +154,9 @@ export default function Intake() {
       {step.type === "text" && (
         <FieldInput
           value={(intake as any)[step.field!]}
-          onChangeText={(t) => setIntakeField(step.field as any, t as any)}
+          onChangeText={(t) => setIntakeField(step.field as any, (step.field === "age" ? wholeNumberInput(t) : t) as any)}
           placeholder={step.placeholder ?? ""}
-          keyboardType={step.field === "age" ? "numeric" : "default"}
+          keyboardType={step.field === "age" ? "number-pad" : "default"}
         />
       )}
 
@@ -201,9 +202,9 @@ export default function Intake() {
               <Body size={12} color={colors.muted} style={{ marginBottom: 8 }}>Height (cm)</Body>
               <TextInput
                 value={intake.heightCm}
-                onChangeText={(t) => setIntakeField("heightCm", t)}
+                onChangeText={(t) => setIntakeField("heightCm", decimalInput(t))}
                 placeholder="162"
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
                 placeholderTextColor={colors.faint}
                 style={{ fontFamily: "Outfit_700Bold", fontSize: 28, color: colors.ink }}
               />
@@ -212,9 +213,9 @@ export default function Intake() {
               <Body size={12} color={colors.muted} style={{ marginBottom: 8 }}>Weight (kg)</Body>
               <TextInput
                 value={intake.weightKg}
-                onChangeText={(t) => setIntakeField("weightKg", t)}
+                onChangeText={(t) => setIntakeField("weightKg", decimalInput(t))}
                 placeholder="68"
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
                 placeholderTextColor={colors.faint}
                 style={{ fontFamily: "Outfit_700Bold", fontSize: 28, color: colors.ink }}
               />

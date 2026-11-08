@@ -5,7 +5,8 @@ import { colors } from "../../theme/colors";
 import ScreenScaffold from "../../components/ScreenScaffold";
 import TopBar from "../../components/TopBar";
 import { Body, Card } from "../../components/Primitives";
-import { recipes } from "../../data/recipes";
+import ResourceState from "../../components/ResourceState";
+import { useRecipes } from "../../services/diet";
 import { TabNav } from "../../navigation/types";
 
 const filters = ["All", "Breakfast", "Lunch", "Snack", "Dinner"] as const;
@@ -14,7 +15,9 @@ export default function Kitchen() {
   const navigation = useNavigation<TabNav>();
   const [filter, setFilter] = useState<(typeof filters)[number]>("All");
 
-  const visible = filter === "All" ? recipes : recipes.filter((r) => r.slot === filter);
+  const recipes = useRecipes();
+  const all = recipes.data ?? [];
+  const visible = filter === "All" ? all : all.filter((r) => r.slot === filter);
 
   return (
     <ScreenScaffold header={<TopBar title="Kitchen" subtitle="Recipes cleared for your plan" />}>
@@ -50,6 +53,7 @@ export default function Kitchen() {
         </Body>
       </Card>
 
+      {!recipes.data && <ResourceState resource={recipes} />}
       <View style={{ flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" }}>
         {visible.map((r) => (
           <Pressable

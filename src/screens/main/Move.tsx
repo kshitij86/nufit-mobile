@@ -6,46 +6,71 @@ import { colors } from "../../theme/colors";
 import ScreenScaffold from "../../components/ScreenScaffold";
 import TopBar from "../../components/TopBar";
 import { Body, Card } from "../../components/Primitives";
-import { sessions } from "../../data/sessions";
+import ResourceState from "../../components/ResourceState";
+import { useWeekSessions } from "../../services/workouts";
 import { TabNav } from "../../navigation/types";
+import { useReloadOnFocus } from "../../navigation/useReloadOnFocus";
 import { useAppState } from "../../state/AppState";
+
+/** YYYY-MM-DD in the device's time zone, comparable with session ids. */
+function localIsoDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 export default function Move() {
   const navigation = useNavigation<TabNav>();
   const { data } = useAppState();
-  const featured = sessions[0];
+  const sessions = useWeekSessions();
+  useReloadOnFocus(sessions.reload);
+  const week = sessions.data ?? [];
+  const todayIndex = week.findIndex((s) => s.state === "Today");
+  // Today's session, else the next one this week. `week` is in date order.
+  const featured = todayIndex >= 0 ? week[todayIndex] : week.find((s) => s.id > localIsoDate(new Date()));
   const hasKneePain = data.intake.limits.includes("Knees");
 
   return (
     <ScreenScaffold header={<TopBar title="Move" subtitle="This week's movement" />}>
-      <Card bg={colors.sky} style={{ marginTop: 14, marginBottom: 14 }}>
-        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.skyInk, marginBottom: 8 }}>
-          Today’s session
-        </Text>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 19, color: colors.ink, marginBottom: 4 }}>
-              {featured.name}
-            </Text>
-            <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.skyInk }}>
-              {featured.kind} · {featured.minutes} min · {featured.kit}
-            </Text>
+      {!sessions.data && <ResourceState resource={sessions} />}
+      {sessions.data && week.length === 0 && (
+        <Card style={{ marginTop: 14, marginBottom: 14 }}>
+          <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 16, color: colors.ink, marginBottom: 6 }}>
+            No workouts this week
+          </Text>
+          <Body color={colors.muted} size={14}>
+            Your workouts show here once your care team publishes your plan.
+          </Body>
+        </Card>
+      )}
+      {featured && (
+        <Card bg={colors.sky} style={{ marginTop: 14, marginBottom: 14 }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.skyInk, marginBottom: 8 }}>
+            {featured.state === "Today" ? "Today’s session" : `Next session · ${featured.state}`}
+          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 19, color: colors.ink, marginBottom: 4 }}>
+                {featured.name}
+              </Text>
+              <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.skyInk }}>
+                {featured.kind} · {featured.minutes} min · {featured.kit}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => navigation.navigate("Player", { sessionId: featured.id })}
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                backgroundColor: colors.skyStrong,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="play" size={24} color="#fff" />
+            </Pressable>
           </View>
-          <Pressable
-            onPress={() => navigation.navigate("Player", { sessionId: featured.id })}
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: colors.skyStrong,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="play" size={24} color="#fff" />
-          </Pressable>
-        </View>
-      </Card>
+        </Card>
+      )}
 
       {hasKneePain && (
         <Card bg={colors.amberTint} style={{ marginBottom: 14 }}>
@@ -57,10 +82,10 @@ export default function Move() {
       )}
 
       <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: colors.muted, marginBottom: 10 }}>
-        This week · 4 sessions
+        This week · {week.length} {week.length === 1 ? "session" : "sessions"}
       </Text>
       <View style={{ gap: 10, marginBottom: 18 }}>
-        {sessions.map((s) => (
+        {week.map((s) => (
           <Pressable
             key={s.id}
             onPress={() => navigation.navigate("Player", { sessionId: s.id })}

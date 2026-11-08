@@ -1,21 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, Switch } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import { BackButton, Body, Card, Heading } from "../components/Primitives";
-
-const initialToggles = [
-  { id: "meals", icon: "restaurant" as const, name: "Meal windows", desc: "15 minutes before each slot", default: true },
-  { id: "water", icon: "water" as const, name: "Water", desc: "Every 2 hours, 8 am – 8 pm", default: true },
-  { id: "movement", icon: "barbell" as const, name: "Movement", desc: "At your session time", default: true },
-  { id: "wind-down", icon: "moon" as const, name: "Wind-down", desc: "10:00 pm, screens off", default: false },
-];
+import ResourceState from "../components/ResourceState";
+import { userMessage } from "../services/http";
+import { setReminderEnabled, useReminders } from "../services/reminders";
+import { useAppState } from "../state/AppState";
 
 export default function Reminders() {
-  const [state, setState] = useState<Record<string, boolean>>(
-    Object.fromEntries(initialToggles.map((t) => [t.id, t.default]))
-  );
+  const reminders = useReminders();
+  const { toast } = useAppState();
+  const toggle = (id: string, enabled: boolean) =>
+    setReminderEnabled(id, enabled).catch((e) => toast.show(userMessage(e)));
 
   return (
     <ScreenScaffold header={<BackButton />}>
@@ -24,8 +22,9 @@ export default function Reminders() {
         Quiet by default. Turn on only what you will actually act on.
       </Body>
 
+      {!reminders.data && <ResourceState resource={reminders} />}
       <View style={{ gap: 12, marginBottom: 20 }}>
-        {initialToggles.map((t) => (
+        {reminders.data?.map((t) => (
           <View
             key={t.id}
             style={{
@@ -43,12 +42,12 @@ export default function Reminders() {
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 15, color: colors.ink }}>{t.name}</Text>
               <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 12, color: colors.muted, marginTop: 2 }}>
-                {t.desc}
+                {t.description}
               </Text>
             </View>
             <Switch
-              value={state[t.id]}
-              onValueChange={(v) => setState((s) => ({ ...s, [t.id]: v }))}
+              value={t.enabled}
+              onValueChange={(v) => void toggle(t.id, v)}
               trackColor={{ false: colors.hairline, true: colors.orange }}
               thumbColor="#fff"
             />

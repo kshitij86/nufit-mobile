@@ -1,6 +1,6 @@
 import { API_HOST } from "../../config";
 import { ApiError, NetworkError, userMessage } from "../http";
-import { createOrder, verifyPayment, VERIFY_FAILED_MESSAGE } from "../payments";
+import { createCustomPlanOrder, createOrder, verifyPayment, VERIFY_FAILED_MESSAGE } from "../payments";
 import { logIn, logOut } from "../session";
 import { FetchMock, jsonResponse, mockFetch, requestOf, tokens } from "../../test/fetchMock";
 
@@ -67,6 +67,31 @@ describe("createOrder", () => {
   test("rejects an incomplete order", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(200, { orderId: "order_123" }));
     await expect(createOrder("pcos")).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe("createCustomPlanOrder", () => {
+  test("sends only the custom plan id", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, { keyId: "key_test_abc", orderId: "order_cp1", amount: 1180000, currency: "INR" })
+    );
+
+    await expect(createCustomPlanOrder("cp1")).resolves.toEqual({
+      keyId: "key_test_abc",
+      orderId: "order_cp1",
+      amount: 1180000,
+      currency: "INR",
+    });
+    expect(requestOf(fetchMock, 0)).toMatchObject({
+      url: `${PAYMENTS}/orders`,
+      authorization: "Bearer access-1",
+      body: { customPlanId: "cp1" },
+    });
+  });
+
+  test("passes on the server's error, e.g. when payments aren't configured", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse(503, { error: "Payments are not available right now. Please try again later." }));
+    await expect(createCustomPlanOrder("cp1")).rejects.toThrow("Payments are not available right now");
   });
 });
 

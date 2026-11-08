@@ -5,14 +5,17 @@ import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton from "../components/PillButton";
 import { BackButton, Body, Heading, ProgressBar } from "../components/Primitives";
-import { quizQuestions, programmeFromGoals } from "../data/quiz";
+import { quizQuestions } from "../data/quiz";
+import { userMessage } from "../services/http";
+import { submitQuizAnswers } from "../services/quiz";
 import { useAppState } from "../state/AppState";
 import { RootNav } from "../navigation/types";
 
 export default function Quiz() {
   const navigation = useNavigation<RootNav>();
-  const { data, setQuizAnswer, update } = useAppState();
+  const { data, setQuizAnswer, update, toast } = useAppState();
   const [index, setIndex] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
   const question = quizQuestions[index];
   const selected = data.quizAnswers[question.id] ?? [];
@@ -29,14 +32,23 @@ export default function Quiz() {
   const isLast = index === quizQuestions.length - 1;
   const canContinue = selected.length > 0;
 
-  const onContinue = () => {
-    if (isLast) {
-      const goals = data.quizAnswers.goals ?? [];
-      update({ programmeId: programmeFromGoals(goals) });
-      navigation.navigate("Match");
-    } else {
+  const onContinue = async () => {
+    if (!isLast) {
       setIndex(index + 1);
+      return;
     }
+    setSubmitting(true);
+    let match;
+    try {
+      match = await submitQuizAnswers(data.quizAnswers);
+    } catch (e) {
+      toast.show(userMessage(e));
+      return;
+    } finally {
+      setSubmitting(false);
+    }
+    update({ programmeId: match.programmeId });
+    navigation.navigate("Match");
   };
 
   const onBack = () => {
@@ -62,6 +74,7 @@ export default function Quiz() {
           label={isLast ? "See my match" : "Continue"}
           onPress={onContinue}
           disabled={!canContinue}
+          loading={submitting}
         />
       }
     >

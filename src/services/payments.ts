@@ -1,6 +1,10 @@
 import { PAYMENTS_BASE_URL } from "../config";
 import { ProgrammeId } from "../types";
+import { TODAY_PLAN_RESOURCE_KEY } from "./diet";
 import { ApiError, NetworkError } from "./http";
+import { PROGRAMME_RESOURCE_KEY } from "./journey";
+import { ORDERS_RESOURCE_KEY } from "./orders";
+import { invalidate } from "./resource";
 import { authPost } from "./session";
 
 export const VERIFY_FAILED_MESSAGE = "We couldn't confirm your payment. If money was deducted, contact support.";
@@ -21,11 +25,20 @@ export interface RazorpaySuccess {
 }
 
 // The server sets the price, so only the programme is sent.
-export async function createOrder(programmeId: ProgrammeId): Promise<RazorpayOrder> {
-  console.log("[payments] POST /orders", { programmeId });
+export function createOrder(programmeId: ProgrammeId): Promise<RazorpayOrder> {
+  return createPaymentOrder({ programmeId });
+}
+
+/** For a custom plan the clinic built for this member. The server prices it from the plan. */
+export function createCustomPlanOrder(customPlanId: string): Promise<RazorpayOrder> {
+  return createPaymentOrder({ customPlanId });
+}
+
+async function createPaymentOrder(body: { programmeId: ProgrammeId } | { customPlanId: string }): Promise<RazorpayOrder> {
+  console.log("[payments] POST /orders", body);
   let order;
   try {
-    order = await authPost<Partial<RazorpayOrder> | null>(`${PAYMENTS_BASE_URL}/orders`, { programmeId });
+    order = await authPost<Partial<RazorpayOrder> | null>(`${PAYMENTS_BASE_URL}/orders`, body);
   } catch (e) {
     console.warn("[payments] /orders failed:", e instanceof ApiError ? `${e.status} ${e.message}` : e);
     throw e;
@@ -53,6 +66,9 @@ export async function verifyPayment(
         fallbackError: VERIFY_FAILED_MESSAGE,
       });
       if (res?.verified !== true) throw new ApiError(VERIFY_FAILED_MESSAGE, 200);
+      invalidate(ORDERS_RESOURCE_KEY);
+      invalidate(PROGRAMME_RESOURCE_KEY);
+      invalidate(TODAY_PLAN_RESOURCE_KEY);
       return;
     } catch (e) {
       if (!(e instanceof NetworkError) || attempt >= retryDelaysMs.length) throw e;

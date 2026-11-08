@@ -139,7 +139,7 @@ test("keeps the session when refresh fails on the network", async () => {
     .mockResolvedValueOnce(jsonResponse(401, { detail: "Token expired" }))
     .mockRejectedValueOnce(new TypeError("Network request failed"));
 
-  await expect(authPost(URL, {})).rejects.toThrow("Couldn't reach Nufit");
+  await expect(authPost(URL, {})).rejects.toThrow("Couldn't reach 360° Fitness");
   expect(await loadSession()).toBe(true);
 });
 

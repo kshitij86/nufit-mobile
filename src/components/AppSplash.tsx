@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { colors } from "../theme/colors";
+import Wordmark from "./Wordmark";
 
 const SPLASH_MS = 3000;
 const FADE_OUT_MS = 400;
@@ -52,9 +53,7 @@ export default function AppSplash({ onLayout, onFinish }: { onLayout?: () => voi
         </Animated.View>
 
         <Animated.View style={{ alignItems: "center", opacity: text, transform: [{ translateY: textShift }] }}>
-          <Text style={styles.wordmark}>
-            nufit<Text style={{ color: colors.orange }}>.</Text>
-          </Text>
+          <Wordmark size={48} align="center" />
           <Text style={styles.tagline}>HOLISTIC · CLINICAL · YOURS</Text>
         </Animated.View>
       </View>
@@ -89,13 +88,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     right: 14,
   },
-  wordmark: { fontFamily: "Outfit_800ExtraBold", fontSize: 48, color: colors.ink, letterSpacing: -1 },
   tagline: {
     fontFamily: "Nunito_800ExtraBold",
     fontSize: 11,
     letterSpacing: 2,
     color: "#B4703A",
-    marginTop: 8,
+    marginTop: 14,
   },
   track: {
     position: "absolute",

@@ -23,7 +23,7 @@ export class NetworkError extends UserFacingError {
     super(
       timedOut
         ? "This is taking longer than usual. Please check your connection and try again."
-        : "Couldn't reach Nufit. Please check your connection and try again."
+        : "Couldn't reach 360° Fitness. Please check your connection and try again."
     );
     this.name = "NetworkError";
   }

@@ -75,7 +75,7 @@ export default function Welcome() {
       <Eyebrow>Holistic · clinical · yours</Eyebrow>
       <Heading size={32}>Start where your body actually is today.</Heading>
       <Body style={{ marginTop: 14 }}>
-        Nufit asks how you feel before it tells you what to do. Dr. Kanika writes the plan; the app adapts the
+        360° Fitness asks how you feel before it tells you what to do. Dr. Kanika writes the plan; the app adapts the
         day around you.
       </Body>
     </ScreenScaffold>

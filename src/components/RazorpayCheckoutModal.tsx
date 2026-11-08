@@ -23,7 +23,7 @@ function buildHtml({ order, description, method, prefill }: RazorpayCheckoutOpti
     order_id: order.orderId,
     amount: order.amount,
     currency: order.currency,
-    name: "Nufit",
+    name: "360° Fitness",
     description,
     prefill: { ...prefill, method },
     theme: { color: colors.orange },

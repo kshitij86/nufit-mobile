@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
@@ -10,6 +10,7 @@ import { Body, Eyebrow, Heading } from "../components/Primitives";
 import { useAuth } from "../state/Auth";
 import { userMessage } from "../services/http";
 import { RootNav, RootStackParamList } from "../navigation/types";
+import Wordmark from "../components/Wordmark";
 
 export default function Login() {
   const navigation = useNavigation<RootNav>();
@@ -41,14 +42,12 @@ export default function Login() {
         <>
           <PillButton label="Log in" loading={busy} disabled={!canSubmit} onPress={submit} />
           <PillButton label="Log in with phone · coming soon" variant="outline" disabled />
-          <TextButton label="New to Nufit? Create an account" onPress={() => navigation.navigate("Register")} />
+          <TextButton label="New to 360° Fitness? Create an account" onPress={() => navigation.navigate("Register")} />
         </>
       }
     >
       <View style={{ marginTop: 24, marginBottom: 28 }}>
-        <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 32, color: colors.ink, letterSpacing: -1, marginBottom: 24 }}>
-          nufit<Text style={{ color: colors.orange }}>.</Text>
-        </Text>
+        <Wordmark size={32} style={{ marginBottom: 24 }} />
         <Eyebrow>Welcome back</Eyebrow>
         <Heading size={28}>Log in to your account</Heading>
       </View>

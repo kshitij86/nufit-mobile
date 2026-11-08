@@ -43,6 +43,14 @@ export function formatBirthDate(isoDate: string): string {
   return date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
 }
 
+/** A YYYY-MM-DD date as "30 Oct", read as a calendar date like formatBirthDate. */
+export function formatCalendarDay(isoDate: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  if (!match) return isoDate;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+}
+
 /** "+919876543210" as "+91 98765 43210". Other numbers are shown as given. */
 export function formatPhone(e164: string): string {
   const match = /^\+91(\d{5})(\d{5})$/.exec(e164);

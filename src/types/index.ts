@@ -43,10 +43,9 @@ export interface SessionStep {
   seconds: number;
 }
 
-export type SessionId = "strength" | "mobility" | "cardio" | "breath";
-
 export interface Session {
-  id: SessionId;
+  /** The date it's scheduled on (YYYY-MM-DD), or "breath" for the local wind-down session. */
+  id: string;
   name: string;
   kind: string;
   minutes: number;
@@ -113,8 +112,10 @@ export interface TimelineItem {
   title: string;
   subtitle: string;
   macro?: string;
+  /** The clinic's note on this meal slot. */
+  note?: string;
   isSession?: boolean;
-  sessionId?: SessionId;
+  sessionId?: string;
 }
 
 export interface CircleMessage {

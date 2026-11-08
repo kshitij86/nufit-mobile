@@ -6,16 +6,14 @@ import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import ResourceState from "../components/ResourceState";
 import { BackButton, Body, Card, Divider, ProgressBar } from "../components/Primitives";
-import { programmeById } from "../data/programmes";
-import { useAppState } from "../state/AppState";
 import { useAuth } from "../state/Auth";
 import { RootNav, RootStackParamList } from "../navigation/types";
-import { useProgrammeStatus } from "../services/journey";
+import { ProgrammeStatus, useProgrammeStatus } from "../services/journey";
 import { useMeasurements } from "../services/measurements";
 import { useReminders } from "../services/reminders";
 import { orderStatusLabel, OrderStatus, useOrders } from "../services/orders";
 import { initialsOf } from "../services/user";
-import { formatBirthDate, formatDay, formatInr, formatPhone } from "../utils/format";
+import { formatBirthDate, formatCalendarDay, formatDay, formatInr, formatPhone } from "../utils/format";
 
 const statusInk: Record<OrderStatus, string> = {
   created: colors.muted,
@@ -72,16 +70,27 @@ function Orders() {
   );
 }
 
+function programmeHeadline(status: ProgrammeStatus): string {
+  switch (status.status) {
+    case "awaiting_plan":
+      return "Your plan is being prepared";
+    case "scheduled":
+      return status.startDate ? `Starts ${formatCalendarDay(status.startDate)}` : "Starting soon";
+    case "completed":
+      return "Programme complete";
+    default:
+      return status.nextReview ? `Next review ${status.nextReview}` : "On track";
+  }
+}
+
 export default function Profile() {
   const navigation = useNavigation<RootNav>();
-  const { data } = useAppState();
   const { user, userError, reloadUser, signOut } = useAuth();
   const status = useProgrammeStatus().data;
   const measurements = useMeasurements();
   const reminders = useReminders().data;
-  const programme = programmeById(data.programmeId);
   const confirmLogOut = () =>
-    Alert.alert("Log out?", "You'll need to log in again to use Nufit on this device.", [
+    Alert.alert("Log out?", "You'll need to log in again to use 360° Fitness on this device.", [
       { text: "Cancel", style: "cancel" },
       { text: "Log out", style: "destructive", onPress: () => void signOut() },
     ]);
@@ -115,25 +124,31 @@ export default function Profile() {
         ) : (
           <Body color={colors.muted} size={14}>Loading your details…</Body>
         )}
-        {status && (
+        {status?.programmeName && (
           <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.muted, marginTop: 2 }}>
-            {programme.name} · day {status.day}
+            {status.programmeName}
+            {status.status === "active" ? ` · day ${status.day}` : ""}
           </Text>
         )}
       </View>
 
-      {status && (
+      {status && status.status !== "none" && (
         <Card bg={colors.amberTint} style={{ marginBottom: 20 }}>
           <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.amberInk, marginBottom: 10 }}>
             Programme
           </Text>
-          <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 15, color: colors.ink, marginBottom: 10 }}>
-            Next review {status.nextReview}
-          </Text>
-          <ProgressBar progress={status.day / status.totalDays} color={colors.amberStrong} track="#FFFFFF" />
-          <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 12, color: colors.amberInk, marginTop: 8 }}>
-            Day {status.day} of {status.totalDays}
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            {status.status === "awaiting_plan" && <Ionicons name="hourglass-outline" size={17} color={colors.amberInk} />}
+            <Text style={{ flex: 1, fontFamily: "Outfit_700Bold", fontSize: 15, color: colors.ink }}>{programmeHeadline(status)}</Text>
+          </View>
+          {(status.status === "active" || status.status === "completed") && status.totalDays > 0 && (
+            <>
+              <ProgressBar progress={status.day / status.totalDays} color={colors.amberStrong} track="#FFFFFF" />
+              <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 12, color: colors.amberInk, marginTop: 8 }}>
+                Day {status.day} of {status.totalDays}
+              </Text>
+            </>
+          )}
         </Card>
       )}
 

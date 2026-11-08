@@ -50,7 +50,9 @@ export default function Mood() {
         <PillButton label="Shape my day" disabled={!selected} loading={submitting} onPress={onSubmit} />
       }
     >
-      {status && <Eyebrow>{status.weekday} · Day {status.day}</Eyebrow>}
+      {status && (
+        <Eyebrow>{status.status === "active" ? `${status.weekday} · Day ${status.day}` : status.weekday}</Eyebrow>
+      )}
       <Heading size={24}>Before we plan the day — how are you{user ? `, ${user.firstName}` : ""}?</Heading>
       <Body style={{ marginTop: 10, marginBottom: 20 }}>
         Honest beats impressive. Today reshapes itself around this.

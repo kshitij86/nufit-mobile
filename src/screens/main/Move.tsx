@@ -9,23 +9,42 @@ import { Body, Card } from "../../components/Primitives";
 import ResourceState from "../../components/ResourceState";
 import { useWeekSessions } from "../../services/workouts";
 import { TabNav } from "../../navigation/types";
+import { useReloadOnFocus } from "../../navigation/useReloadOnFocus";
 import { useAppState } from "../../state/AppState";
+
+/** YYYY-MM-DD in the device's time zone, comparable with session ids. */
+function localIsoDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 
 export default function Move() {
   const navigation = useNavigation<TabNav>();
   const { data } = useAppState();
   const sessions = useWeekSessions();
+  useReloadOnFocus(sessions.reload);
   const week = sessions.data ?? [];
-  const featured = week[0];
+  const todayIndex = week.findIndex((s) => s.state === "Today");
+  // Today's session, else the next one this week. `week` is in date order.
+  const featured = todayIndex >= 0 ? week[todayIndex] : week.find((s) => s.id > localIsoDate(new Date()));
   const hasKneePain = data.intake.limits.includes("Knees");
 
   return (
     <ScreenScaffold header={<TopBar title="Move" subtitle="This week's movement" />}>
       {!sessions.data && <ResourceState resource={sessions} />}
+      {sessions.data && week.length === 0 && (
+        <Card style={{ marginTop: 14, marginBottom: 14 }}>
+          <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 16, color: colors.ink, marginBottom: 6 }}>
+            No workouts this week
+          </Text>
+          <Body color={colors.muted} size={14}>
+            Your workouts show here once your care team publishes your plan.
+          </Body>
+        </Card>
+      )}
       {featured && (
         <Card bg={colors.sky} style={{ marginTop: 14, marginBottom: 14 }}>
           <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.skyInk, marginBottom: 8 }}>
-            Today’s session
+            {featured.state === "Today" ? "Today’s session" : `Next session · ${featured.state}`}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
             <View style={{ flex: 1 }}>

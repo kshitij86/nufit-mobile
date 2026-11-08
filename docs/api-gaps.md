@@ -15,6 +15,9 @@ Checked against `nufit-api` at `4896cbc` (27 Oct 2026).
 | Measure, MeasureDone, Journey (weight trend, inches table), Profile | `POST /users/me/measurements`, `GET /users/me/measurements` |
 | Profile (order history) | `GET /orders` (`GET /orders/{id}` is wrapped but unused) |
 | Checkout | `POST /payments/orders`, `POST /payments/verify` |
+| Today, Mood, Profile (programme status) | `GET /users/me/programme` |
+| Today (published diet chart, workout slot, guidance, clinic note) | `GET /users/me/plan/today` |
+| Move, Player (published workout plan) | `GET /users/me/workouts/week`, `GET /users/me/workouts/sessions/{date}` |
 
 `createCustomPlanOrder(customPlanId)` exists in `src/services/payments.ts` with no
 screen yet, because nothing lists a member's custom plans (see
@@ -35,6 +38,9 @@ screen yet, because nothing lists a member's custom plans (see
 ---
 
 ## Programme status
+
+> **Live.** Served as below, except `paused` and `expiring` aren't returned yet,
+> and `day` is 1 on the start date. The rest of this section is the original brief.
 
 **Screens:** Today (header "Tuesday · Day 26"), Mood (eyebrow), Profile
 (programme card), Journey (header).
@@ -205,6 +211,12 @@ Streak headline itself from `days`, `missed_this_period` and `longest_gap_days`.
 
 ## Today's diet chart
 
+> **`GET /users/me/plan/today` is live**, with these differences: no `mood`
+> parameter (the published plan has no alternate sessions to swap in), no
+> `macro` (foods carry no portion-level nutrition yet), and each item has a
+> `note` plus the response has `guidance`. `reason` is the programme status.
+> Recipes and recipe swaps are still gaps.
+
 **Screens:** Today (meal timeline, macros, clinic note), Kitchen (recipes
 "cleared for your plan"), Recipe ("Swap into today's lunch").
 **App today:** `useTodayPlan()`, `useRecipes()`, `useRecipe()` and
@@ -276,6 +288,11 @@ Only recipes that fit the member's published chart and intake (diet, allergies).
 approval" and the clinic approves it in the console.
 
 ## Workout plan and exercise videos
+
+> **Week and session endpoints are live.** A session's id is its date
+> (YYYY-MM-DD). `state` is `today`, `upcoming` or `past`, because completions
+> aren't recorded yet. Clips are returned per step, but Player doesn't play them
+> yet. `POST .../complete` is still a gap.
 
 **Screens:** Move (today's session, "This week · 4 sessions"), Player (timed
 steps), Sleep ("Start 6-minute breath").

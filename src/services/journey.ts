@@ -1,19 +1,72 @@
+import { USERS_BASE_URL } from "../config";
 import { adherence14, streakWeek } from "../data/journey";
 import { milestones } from "../data/milestones";
 import { Milestone } from "../types";
-import { readyResource, Resource } from "./resource";
+import { formatCalendarDay } from "../utils/format";
+import { ApiError } from "./http";
+import { readyResource, Resource, useResource } from "./resource";
+import { authGet } from "./session";
 
-// Local until the API serves programme status, adherence, reviews, milestones and streaks
-// (docs/api-gaps.md). Measurements are already live: see services/measurements.ts.
+// Programme status comes from the API. Adherence, reviews, milestones and streaks are local until
+// the API serves them (docs/api-gaps.md). Measurements are live too: see services/measurements.ts.
+
+export const PROGRAMME_RESOURCE_KEY = "programme";
 
 export type DayState = "full" | "partial" | "missed";
 
+/**
+ * none: no paid programme. awaiting_plan: paid, the clinic hasn't published a plan yet.
+ * scheduled: published, starts on startDate. completed: past the last day.
+ */
+export type ProgrammeState = "none" | "awaiting_plan" | "scheduled" | "active" | "completed";
+
 export interface ProgrammeStatus {
+  status: ProgrammeState;
+  programmeName: string | null;
+  /** YYYY-MM-DD. */
+  startDate: string | null;
+  /** 1 on the start date; 0 until the programme starts. */
   day: number;
   totalDays: number;
+  /** Today's weekday, e.g. "Tuesday". */
   weekday: string;
-  nextReview: string;
+  /** "30 Oct", or null when no review is due before the programme ends. */
+  nextReview: string | null;
+  coach: string | null;
 }
+
+const STATES: ProgrammeState[] = ["none", "awaiting_plan", "scheduled", "active", "completed"];
+const LOAD_ERROR = "Couldn't load your programme. Please try again.";
+
+type ProgrammeResponse = {
+  status?: unknown;
+  programme?: { name?: unknown } | null;
+  start_date?: unknown;
+  day?: unknown;
+  total_days?: unknown;
+  next_review_on?: unknown;
+  coach?: { name?: unknown } | null;
+} | null;
+
+const textOrNull = (value: unknown) => (typeof value === "string" && value ? value : null);
+
+export async function fetchProgrammeStatus(now = new Date()): Promise<ProgrammeStatus> {
+  const raw = await authGet<ProgrammeResponse>(`${USERS_BASE_URL}/me/programme`, { fallbackError: LOAD_ERROR });
+  if (!raw || !STATES.includes(raw.status as ProgrammeState)) throw new ApiError(LOAD_ERROR, 200);
+  const nextReview = textOrNull(raw.next_review_on);
+  return {
+    status: raw.status as ProgrammeState,
+    programmeName: textOrNull(raw.programme?.name),
+    startDate: textOrNull(raw.start_date),
+    day: typeof raw.day === "number" ? raw.day : 0,
+    totalDays: typeof raw.total_days === "number" ? raw.total_days : 0,
+    weekday: now.toLocaleDateString("en-IN", { weekday: "long" }),
+    nextReview: nextReview ? formatCalendarDay(nextReview) : null,
+    coach: textOrNull(raw.coach?.name),
+  };
+}
+
+const loadProgrammeStatus = () => fetchProgrammeStatus();
 
 export interface Adherence {
   /** Oldest first. */
@@ -37,7 +90,7 @@ export interface Streak {
 }
 
 export function useProgrammeStatus(): Resource<ProgrammeStatus> {
-  return readyResource({ day: 26, totalDays: 84, weekday: "Tuesday", nextReview: "28 Aug" });
+  return useResource(PROGRAMME_RESOURCE_KEY, loadProgrammeStatus);
 }
 
 export function useAdherence(): Resource<Adherence> {

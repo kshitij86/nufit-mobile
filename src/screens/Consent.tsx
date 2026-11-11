@@ -3,8 +3,9 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
+import { AccountHeader } from "../components/AccountButton";
 import PillButton from "../components/PillButton";
-import { BackButton, Body, Card, Eyebrow, Heading } from "../components/Primitives";
+import { Body, Card, Eyebrow, Heading } from "../components/Primitives";
 import { PhotoConsent, useAppState } from "../state/AppState";
 import { useAuth } from "../state/Auth";
 import { RootNav } from "../navigation/types";
@@ -102,7 +103,7 @@ export default function Consent() {
 
   return (
     <ScreenScaffold
-      header={<BackButton />}
+      header={<AccountHeader />}
       footer={
         <PillButton
           label="Sign & continue"

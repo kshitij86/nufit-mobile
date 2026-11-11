@@ -103,9 +103,11 @@ export default function Intake() {
   };
 
   const goBack = () => {
-    if (index === 0) navigation.goBack();
-    else setIndex(index - 1);
+    if (index > 0) setIndex(index - 1);
+    else if (navigation.canGoBack()) navigation.goBack();
   };
+  // Right after payment Intake is the first member screen, with nothing behind it to go back to.
+  const showBack = index > 0 || navigation.canGoBack();
 
   const setMeal = (rowIdx: number, key: "time" | "item", val: string) => {
     const meals = [...intake.meals];
@@ -123,7 +125,7 @@ export default function Intake() {
       header={
         <View style={{ gap: 12 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <BackButton onPress={goBack} />
+            {showBack ? <BackButton onPress={goBack} /> : <View />}
             <TextButton label="Save & exit" onPress={() => navigation.navigate("Mood")} />
           </View>
           <ProgressBar progress={(index + 1) / intakeSteps.length} />

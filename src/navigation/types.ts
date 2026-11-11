@@ -27,6 +27,9 @@ export type RootStackParamList = {
   Profile: undefined;
 };
 
+/** The screens the member navigator can open on. */
+export type MemberStartRoute = Extract<keyof RootStackParamList, "Intake" | "MainTabs">;
+
 export type MainTabParamList = {
   Today: undefined;
   Move: undefined;

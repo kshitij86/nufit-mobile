@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View, Text, Pressable, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import { AccountHeader } from "../components/AccountButton";
@@ -8,7 +7,6 @@ import PillButton from "../components/PillButton";
 import { Body, Card, Divider, Eyebrow, Heading } from "../components/Primitives";
 import { programmeById } from "../data/programmes";
 import { useAppState } from "../state/AppState";
-import { RootNav } from "../navigation/types";
 import { formatInr } from "../utils/format";
 import { createOrder, verifyPayment, VERIFY_FAILED_MESSAGE } from "../services/payments";
 import { NetworkError, userMessage } from "../services/http";
@@ -29,7 +27,6 @@ const phaseHint: Partial<Record<Phase, string>> = {
 };
 
 export default function Checkout() {
-  const navigation = useNavigation<RootNav>();
   const { data, update, toast } = useAppState();
   const programme = programmeById(data.programmeId);
   const gst = programme.price * 0.18;
@@ -102,8 +99,9 @@ export default function Checkout() {
     }
     setPhase("idle");
     update({ paymentId: reference });
+    // verifyPayment refreshes the programme status, which moves the app to the member navigator
+    // (opening on Intake). The funnel is gone from history, so back can't return to Checkout.
     toast.show("Payment successful");
-    navigation.navigate("Intake");
   };
 
   return (

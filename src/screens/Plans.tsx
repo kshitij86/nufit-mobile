@@ -4,7 +4,8 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
-import { BackButton, Body, Heading } from "../components/Primitives";
+import { AccountHeader } from "../components/AccountButton";
+import { Body, Heading } from "../components/Primitives";
 import { programmes } from "../data/programmes";
 import { useAppState } from "../state/AppState";
 import { RootNav } from "../navigation/types";
@@ -14,7 +15,7 @@ export default function Plans() {
   const { update } = useAppState();
 
   return (
-    <ScreenScaffold header={<BackButton />}>
+    <ScreenScaffold header={<AccountHeader />}>
       <Heading size={26}>All programmes</Heading>
       <Body style={{ marginTop: 8, marginBottom: 20 }}>
         Every track is rewritten around your intake before day one.

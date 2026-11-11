@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton from "../components/PillButton";
+import AccountButton from "../components/AccountButton";
 import { BackButton, Body, Heading, ProgressBar } from "../components/Primitives";
 import { quizQuestions } from "../data/quiz";
 import { userMessage } from "../services/http";
@@ -62,9 +63,12 @@ export default function Quiz() {
         <View style={{ gap: 14 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
             <BackButton onPress={onBack} />
-            <Text style={{ fontFamily: "Nunito_700Bold", color: colors.muted, fontSize: 13 }}>
-              {index + 1}/{quizQuestions.length}
-            </Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <Text style={{ fontFamily: "Nunito_700Bold", color: colors.muted, fontSize: 13 }}>
+                {index + 1}/{quizQuestions.length}
+              </Text>
+              <AccountButton />
+            </View>
           </View>
           <ProgressBar progress={(index + 1) / quizQuestions.length} />
         </View>

@@ -177,7 +177,8 @@ export default function Profile() {
       </Card>
 
       <View style={{ gap: 4 }}>
-        {links.map((link) => (
+        {/* Intake, measurements, consent and the rest only exist once a programme is bought. */}
+        {status && status.status !== "none" && links.map((link) => (
           <Pressable
             key={link.label}
             onPress={() => navigation.navigate(link.screen as never)}

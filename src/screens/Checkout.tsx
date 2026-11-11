@@ -3,8 +3,9 @@ import { View, Text, Pressable, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
+import { AccountHeader } from "../components/AccountButton";
 import PillButton from "../components/PillButton";
-import { BackButton, Body, Card, Divider, Eyebrow, Heading } from "../components/Primitives";
+import { Body, Card, Divider, Eyebrow, Heading } from "../components/Primitives";
 import { programmeById } from "../data/programmes";
 import { useAppState } from "../state/AppState";
 import { RootNav } from "../navigation/types";
@@ -107,7 +108,7 @@ export default function Checkout() {
 
   return (
     <ScreenScaffold
-      header={<BackButton />}
+      header={<AccountHeader />}
       footer={
         <>
           <RazorpayCheckoutModal options={checkout} onResult={onResult} />

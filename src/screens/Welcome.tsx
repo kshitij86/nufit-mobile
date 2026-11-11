@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton from "../components/PillButton";
+import { AccountHeader } from "../components/AccountButton";
 import { Eyebrow, Heading, Body } from "../components/Primitives";
 import { RootNav } from "../navigation/types";
 
@@ -12,16 +13,8 @@ export default function Welcome() {
 
   return (
     <ScreenScaffold
-      footer={
-        <>
-          <PillButton label="Find my programme" onPress={() => navigation.navigate("Quiz")} />
-          <PillButton
-            label="I already have an account"
-            variant="outline"
-            onPress={() => navigation.navigate("Mood")}
-          />
-        </>
-      }
+      header={<AccountHeader back={false} />}
+      footer={<PillButton label="Find my programme" onPress={() => navigation.navigate("Quiz")} />}
     >
       <View
         style={{

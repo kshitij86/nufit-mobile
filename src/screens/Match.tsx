@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
+import { AccountHeader } from "../components/AccountButton";
 import PillButton, { TextButton } from "../components/PillButton";
 import { Body, Card, CheckBadge, Heading, StatChip } from "../components/Primitives";
 import { programmeById } from "../data/programmes";
@@ -25,6 +26,7 @@ export default function Match() {
 
   return (
     <ScreenScaffold
+      header={<AccountHeader back={false} />}
       footer={
         <>
           <PillButton

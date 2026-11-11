@@ -1,7 +1,8 @@
 import React from "react";
 import { View } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { RootStackParamList } from "./types";
+import { MemberStartRoute, RootStackParamList } from "./types";
+import { memberStartRoute, stageFor } from "./flow";
 import Login from "../screens/Login";
 import Register from "../screens/Register";
 import Welcome from "../screens/Welcome";
@@ -27,33 +28,40 @@ import Profile from "../screens/Profile";
 import { useAuth } from "../state/Auth";
 import { useProgrammeStatus } from "../services/journey";
 import ResourceState from "../components/ResourceState";
+import { TextButton } from "../components/PillButton";
+import { useAppState } from "../state/AppState";
 import { colors } from "../theme/colors";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const screenOptions = { headerShown: false, animation: "slide_from_right" } as const;
 
-/**
- * The signed-in app. Members who have bought a programme open on the tabs, where Today says
- * whether their plan is still being prepared; everyone else starts the onboarding funnel.
+/*
+ * The app has three states, each with its own navigator: logged out, onboarding (signed in, no
+ * programme bought) and member (bought). A navigator only registers its own state's screens, so
+ * nothing in one state, not a navigate() call nor Android's back button, can reach another's.
+ * Moving between states is done by changing the state (logging in or out, or the programme status
+ * changing after a payment), which swaps the whole navigator and drops the old history.
  */
-function SignedIn() {
-  const programme = useProgrammeStatus();
-  if (!programme.data) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", padding: 24, backgroundColor: colors.cream }}>
-        <ResourceState resource={programme} />
-      </View>
-    );
-  }
-  const initialRouteName = programme.data.status === "none" ? "Welcome" : "MainTabs";
 
+/** Signed in, no programme bought yet: the funnel from Welcome to Checkout, plus Profile to log out. */
+function OnboardingNavigator() {
   return (
-    <Stack.Navigator initialRouteName={initialRouteName} screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+    <Stack.Navigator initialRouteName="Welcome" screenOptions={screenOptions}>
       <Stack.Screen name="Welcome" component={Welcome} />
       <Stack.Screen name="Quiz" component={Quiz} />
       <Stack.Screen name="Match" component={Match} />
       <Stack.Screen name="Plans" component={Plans} />
       <Stack.Screen name="Consent" component={Consent} />
       <Stack.Screen name="Checkout" component={Checkout} />
+      <Stack.Screen name="Profile" component={Profile} />
+    </Stack.Navigator>
+  );
+}
+
+/** Bought a programme: the post-purchase intake and the app itself. */
+function MemberNavigator({ initialRouteName }: { initialRouteName: MemberStartRoute }) {
+  return (
+    <Stack.Navigator initialRouteName={initialRouteName} screenOptions={screenOptions}>
       <Stack.Screen name="Intake" component={Intake} />
       <Stack.Screen name="Gender" component={Gender} />
       <Stack.Screen name="Measure" component={Measure} />
@@ -72,6 +80,29 @@ function SignedIn() {
   );
 }
 
+/** Picks onboarding or member from the programme status, which is refreshed after a payment. */
+function SignedIn() {
+  const programme = useProgrammeStatus();
+  const { signOut } = useAuth();
+  const { data } = useAppState();
+
+  if (!programme.data) {
+    // Until the status loads there's no state to show, so a failure must still let the user out.
+    return (
+      <View style={{ flex: 1, justifyContent: "center", padding: 24, gap: 8, backgroundColor: colors.cream }}>
+        <ResourceState resource={programme} />
+        {programme.error && <TextButton label="Log out" onPress={() => void signOut()} />}
+      </View>
+    );
+  }
+
+  return stageFor(programme.data.status) === "onboarding" ? (
+    <OnboardingNavigator />
+  ) : (
+    <MemberNavigator initialRouteName={memberStartRoute(data.paymentId)} />
+  );
+}
+
 export default function RootNavigator() {
   const { status } = useAuth();
 
@@ -80,7 +111,7 @@ export default function RootNavigator() {
   if (status === "signedIn") return <SignedIn />;
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+    <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name="Login" component={Login} options={{ animationTypeForReplace: "pop" }} />
       <Stack.Screen name="Register" component={Register} />
     </Stack.Navigator>

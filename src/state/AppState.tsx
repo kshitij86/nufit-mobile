@@ -5,10 +5,9 @@ import { colors } from "../theme/colors";
 import { baseSchedule } from "../data/schedule";
 
 export interface ConsentData {
+  /** The signed-in user's name, filled in from their profile when they sign. */
   name: string;
-  address: string;
-  photoConsent: "agree" | "disagree";
-  faceConsent: "without" | "show";
+  photoConsent: PhotoConsen₹t;
   signature: string;
 }
 
@@ -44,34 +43,26 @@ interface AppData {
   paymentId: string | null;
   intake: IntakeAnswers;
   gender: "female" | "male" | null;
-  measurements: MeasureValues;
   mood: MoodId | null;
   moodTags: string[];
   water: number;
   dayTasksDone: Record<string, boolean>;
-  streak: number;
   sleepChecklist: Record<string, boolean>;
-  circleMessages: CircleMessage[];
-  profileName: string;
 }
 
 const initialData: AppData = {
   quizAnswers: {},
   programmeId: "reset360",
-  consent: { name: "", address: "", photoConsent: "agree", faceConsent: "without", signature: "" },
+  consent: { name: "", photoConsent: "faceHidden", signature: "" },
   paymentMethod: "UPI · GPay, PhonePe",
   paymentId: null,
   intake: emptyIntake,
   gender: null,
-  measurements: {},
   mood: null,
   moodTags: [],
   water: 0.5,
   dayTasksDone: { "wake-water": true },
-  streak: 26,
   sleepChecklist: {},
-  circleMessages: initialCircleMessages,
-  profileName: "Priya Sharma",
 };
 
 interface ToastApi {
@@ -87,7 +78,6 @@ interface AppContextValue {
   toggleDayTask: (id: string) => void;
   addWater: () => void;
   toggleSleepStep: (id: string) => void;
-  postCircleMessage: (text: string) => void;
   toast: ToastApi;
   quickLogOpen: boolean;
   setQuickLogOpen: (open: boolean) => void;
@@ -166,7 +156,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       toggleDayTask,
       addWater,
       toggleSleepStep,
-      postCircleMessage,
       toast: { message: toastMessage, show },
       quickLogOpen,
       setQuickLogOpen,
@@ -179,7 +168,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       toggleDayTask,
       addWater,
       toggleSleepStep,
-      postCircleMessage,
       toastMessage,
       show,
       quickLogOpen,
@@ -195,4 +183,3 @@ export function useAppState() {
   return ctx;
 }
 
-export { baseSchedule };

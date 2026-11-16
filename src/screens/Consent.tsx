@@ -3,21 +3,30 @@ import { View, Text, TextInput, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
+import { AccountHeader } from "../components/AccountButton";
 import PillButton from "../components/PillButton";
-import { BackButton, Body, Card, Eyebrow, Heading } from "../components/Primitives";
-import { useAppState } from "../state/AppState";
+import { Body, Card, Eyebrow, Heading } from "../components/Primitives";
+import { PhotoConsent, useAppState } from "../state/AppState";
+import { useAuth } from "../state/Auth";
 import { RootNav } from "../navigation/types";
 import { NAME_MAX_LENGTH } from "../utils/registration";
 
-// The fields wrap onto new lines, but Return should still finish editing rather than insert a line break.
-const singleLine = (t: string) => t.replace(/[\r\n]+/g, " ");
+const terms = [
+  "Follow Dr. Kanika’s programme for weight loss, body contouring, pain management, posture correction and lifestyle advice. Skipping parts of it may reduce or remove results.",
+  "Keep my programme to myself. It is designed for me alone and may be unsuitable, or even harmful, for anyone else.",
+  "Accept that the fee is non-refundable and cannot be readjusted.",
+];
 
-function InlineInput({ value, onChangeText, placeholder, width = 140, maxLength }: {
-  value: string;
-  onChangeText: (t: string) => void;
-  placeholder: string;
-  width?: number;
-  maxLength?: number;
+const photoOptions: { id: PhotoConsent; label: string }[] = [
+  { id: "none", label: "No, don’t use my photos" },
+  { id: "faceHidden", label: "Yes, with my face hidden" },
+  { id: "faceShown", label: "Yes, my face may show" },
+];
+
+function RadioList<T extends string>({ options, value, onChange }: {
+  options: { id: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
 }) {
   return (
     <TextInput
@@ -61,25 +70,35 @@ function TogglePair({
         const active = i === 0 ? value : !value;
         return (
           <Pressable
-            key={label}
-            onPress={() => onChange(i === 0)}
+            key={id}
+            onPress={() => onChange(id)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: active }}
             style={{
               flex: 1,
               paddingVertical: 10,
               borderRadius: 999,
               backgroundColor: active ? colors.rose : "transparent",
               alignItems: "center",
+              gap: 12,
+              paddingVertical: 12,
+              paddingHorizontal: 14,
+              borderRadius: 14,
+              borderWidth: 1.5,
+              borderColor: active ? colors.orange : colors.hairline,
+              backgroundColor: active ? colors.orangeTint : "transparent",
             }}
           >
-            <Text
+            <View
               style={{
                 color: active ? colors.roseInk : colors.secondary,
                 fontFamily: "Nunito_700Bold",
                 fontSize: 13,
               }}
             >
-              {label}
-            </Text>
+              {active && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.orange }} />}
+            </View>
+            <Body color={colors.ink} style={{ flex: 1 }}>{label}</Body>
           </Pressable>
         );
       })}
@@ -87,21 +106,44 @@ function TogglePair({
   );
 }
 
+function NameLine() {
+  const { user, userError, reloadUser } = useAuth();
+  if (user) return <Body color={colors.ink}>I, <Text style={{ fontFamily: "Nunito_700Bold" }}>{user.fullName}</Text>, agree to:</Body>;
+  if (userError) {
+    return (
+      <Body color={colors.coralInk}>
+        {userError}{" "}
+        <Text onPress={reloadUser} style={{ fontFamily: "Nunito_700Bold", color: colors.orange }}>Try again</Text>
+      </Body>
+    );
+  }
+  return <Body color={colors.muted}>Loading your details…</Body>;
+}
+
 export default function Consent() {
   const navigation = useNavigation<RootNav>();
   const { data, update } = useAppState();
+  const { user } = useAuth();
   const consent = data.consent;
 
   const setConsent = (patch: Partial<typeof consent>) => update({ consent: { ...consent, ...patch } });
 
+  const sign = () => {
+    if (!user) return;
+    setConsent({ name: user.fullName, signature: consent.signature.trim() });
+    navigation.navigate("Checkout");
+  };
+
+  const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
   return (
     <ScreenScaffold
-        header={<BackButton />}
+      header={<AccountHeader />}
       footer={
         <PillButton
           label="Sign & continue"
-          disabled={consent.signature.trim().length === 0}
-          onPress={() => navigation.navigate("Checkout")}
+          disabled={!user || consent.signature.trim().length === 0}
+          onPress={sign}
         />
       }
     >
@@ -109,67 +151,35 @@ export default function Consent() {
       <Heading size={24}>Consent & non-disclosure</Heading>
       <Body style={{ marginTop: 6, marginBottom: 18 }}>Dr. Kanika’s 360° Fitness</Body>
 
-      <Card style={{ marginBottom: 14 }}>
-        <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-          <Body color={colors.ink} size={15}>I,</Body>
-          <InlineInput
-            value={consent.name}
-            onChangeText={(t) => setConsent({ name: t })}
-            placeholder="your name"
-            maxLength={NAME_MAX_LENGTH}
-          />
-          <Body color={colors.ink} size={15}>R/O</Body>
-          <InlineInput
-            value={consent.address}
-            onChangeText={(t) => setConsent({ address: t })}
-            placeholder="your address"
-            width={180}
-          />
-          <Body color={colors.ink} size={15}>
-            hereby agree to follow the instructions given by Dr. Kanika for the purpose of weight loss, body
-            contouring, pain management, posture correction and lifestyle advice. I understand that deviation
-            from the given programme may lead to reduced or no results.
-          </Body>
-        </View>
-
-        <Body style={{ marginTop: 14 }}>
-          I understand that each programme is an individualised programme, and that one programme may not be
-          suitable — or may even be harmful — for people other than the person it is designed for. I therefore
-          agree not to disclose any details of the programme to any other person.
-        </Body>
-
-        <Body style={{ marginTop: 14 }}>
-          I understand that the fee paid towards the programme will not be refunded or readjusted in any case.
-        </Body>
+      <Card style={{ marginBottom: 14, gap: 10 }}>
+        <NameLine />
+        {terms.map((term) => (
+          <View key={term} style={{ flexDirection: "row", gap: 10 }}>
+            <Body color={colors.orange}>•</Body>
+            <Body style={{ flex: 1 }}>{term}</Body>
+          </View>
+        ))}
       </Card>
 
-      <Card style={{ marginBottom: 14, gap: 14 }}>
-        <Body color={colors.ink} size={14}>
-          Photographs taken during the programme may be used for clinic display and publicity.
-        </Body>
-        <TogglePair
-          leftLabel="Agree"
-          rightLabel="Disagree"
-          value={consent.photoConsent === "agree"}
-          onChange={(v) => setConsent({ photoConsent: v ? "agree" : "disagree" })}
-        />
-        <TogglePair
-          leftLabel="Without my face"
-          rightLabel="Face may show"
-          value={consent.faceConsent === "without"}
-          onChange={(v) => setConsent({ faceConsent: v ? "without" : "show" })}
+      <Card style={{ marginBottom: 14, gap: 12 }}>
+        <Body color={colors.ink}>Can we use your progress photos for clinic display and publicity?</Body>
+        <RadioList
+          options={photoOptions}
+          value={consent.photoConsent}
+          onChange={(photoConsent) => setConsent({ photoConsent })}
         />
       </Card>
 
-      <Card>
-        <Text style={{ fontFamily: "Nunito_700Bold", color: colors.secondary, fontSize: 13, marginBottom: 10 }}>
-          Type your name to sign
-        </Text>
+      <Card style={{ gap: 4 }}>
+        <Body color={colors.ink}>Type your full name to sign</Body>
         <TextInput
           value={consent.signature}
-          onChangeText={(t) => setConsent({ signature: singleLine(t) })}
+          // Return finishes signing rather than inserting a line break.
+          onChangeText={(t) => setConsent({ signature: t.replace(/[\r\n]+/g, " ") })}
           placeholder="Your full name"
-          maxLength={NAME_MAX_LENGTH}
+          maxLength={NAME_MAX_LENGTH * 2 + 1}
+          autoCapitalize="words"
+          autoCorrect={false}
           multiline
           submitBehavior="blurAndSubmit"
           returnKeyType="done"
@@ -177,7 +187,7 @@ export default function Consent() {
           style={{
             fontFamily: "Outfit_700Bold",
             fontStyle: "italic",
-            fontSize: 22,
+            fontSize: 20,
             color: colors.ink,
             borderBottomWidth: 1.5,
             borderBottomColor: colors.hairline,
@@ -185,7 +195,7 @@ export default function Consent() {
           }}
         />
         <Text style={{ fontFamily: "Nunito_600SemiBold", color: colors.muted, fontSize: 12, marginTop: 10 }}>
-          Signed 29 August 2026 · timestamp recorded
+          Signed {today} · timestamp recorded
         </Text>
       </Card>
     </ScreenScaffold>

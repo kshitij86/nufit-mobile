@@ -5,7 +5,9 @@ import { Ionicons } from "@expo/vector-icons";
 import Svg, { Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
-import { sessionById } from "../data/sessions";
+import ResourceState from "../components/ResourceState";
+import { useSession } from "../services/workouts";
+import { Session } from "../types";
 import { RootStackParamList, RootNav } from "../navigation/types";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -21,9 +23,20 @@ function formatTime(seconds: number) {
 }
 
 export default function Player() {
-  const navigation = useNavigation<RootNav>();
   const route = useRoute<RouteProp<RootStackParamList, "Player">>();
-  const session = sessionById(route.params.sessionId);
+  const session = useSession(route.params.sessionId);
+  if (!session.data) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.cream, justifyContent: "center", padding: 20 }}>
+        <ResourceState resource={session} />
+      </SafeAreaView>
+    );
+  }
+  return <SessionPlayer session={session.data} />;
+}
+
+function SessionPlayer({ session }: { session: Session }) {
+  const navigation = useNavigation<RootNav>();
 
   const [stepIndex, setStepIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);

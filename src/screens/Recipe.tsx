@@ -5,17 +5,38 @@ import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton from "../components/PillButton";
 import { BackButton, Body, StatChip } from "../components/Primitives";
-import { recipeById } from "../data/recipes";
+import ResourceState from "../components/ResourceState";
+import { requestRecipeSwap, useRecipe } from "../services/diet";
+import { userMessage } from "../services/http";
 import { RootStackParamList, RootNav } from "../navigation/types";
 import { useAppState } from "../state/AppState";
 
 export default function Recipe() {
   const navigation = useNavigation<RootNav>();
   const route = useRoute<RouteProp<RootStackParamList, "Recipe">>();
-  const recipe = recipeById(route.params.recipeId);
+  const recipeResource = useRecipe(route.params.recipeId);
+  const recipe = recipeResource.data;
   const { toast } = useAppState();
 
+  if (recipe === undefined) {
+    return (
+      <ScreenScaffold header={<BackButton />}>
+        <ResourceState resource={recipeResource} />
+      </ScreenScaffold>
+    );
+  }
   if (!recipe) return null;
+
+  const swap = async () => {
+    try {
+      await requestRecipeSwap(recipe.id);
+    } catch (e) {
+      toast.show(userMessage(e));
+      return;
+    }
+    toast.show("Swap sent for approval");
+    navigation.navigate("MainTabs");
+  };
 
   return (
     <ScreenScaffold
@@ -23,10 +44,7 @@ export default function Recipe() {
         <>
           <PillButton
             label={`Swap into today's ${recipe.slot}`}
-            onPress={() => {
-              toast.show("Swap sent for approval");
-              navigation.navigate("MainTabs");
-            }}
+            onPress={swap}
           />
           <Body size={12} style={{ textAlign: "center" }}>
             Swaps are approved by the nutrition team within one working day.

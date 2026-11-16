@@ -3,17 +3,16 @@ import { View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
-import { useAppState } from "../state/AppState";
+import { useAuth } from "../state/Auth";
+import { useStreak } from "../services/journey";
+import { initialsOf } from "../services/user";
 import { TabNav } from "../navigation/types";
 
 export default function TopBar({ title, subtitle }: { title: string; subtitle: string }) {
   const navigation = useNavigation<TabNav>();
-  const { data } = useAppState();
-  const initials = data.profileName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2);
+  const { user } = useAuth();
+  const streak = useStreak().data;
+  const initials = user ? initialsOf(user.fullName) : "";
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>

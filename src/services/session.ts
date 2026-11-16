@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { AUTH_BASE_URL } from "../config";
 import { RegisterRequest } from "../utils/registration";
-import { ApiError, NetworkError, PostOptions, UserFacingError, postJson } from "./http";
+import { ApiError, NetworkError, PostOptions, UserFacingError, getJson, postJson } from "./http";
 
 const ACCESS_KEY = "nufit.accessToken";
 const REFRESH_KEY = "nufit.refreshToken";
@@ -131,13 +131,24 @@ function refreshTokens(): Promise<boolean> {
   return refreshing;
 }
 
+type AuthOptions = Omit<PostOptions, "token">;
+
 // POST with the access token. On a 401, refreshes once and retries once; if that fails the
 // session is cleared, listeners are told, and SessionExpiredError is thrown.
-export async function authPost<T>(url: string, body: unknown, options?: Omit<PostOptions, "token">): Promise<T> {
+export function authPost<T>(url: string, body: unknown, options?: AuthOptions): Promise<T> {
+  return withAccessToken((token) => postJson<T>(url, body, { ...options, token }));
+}
+
+// GET with the same refresh-and-retry behaviour as authPost.
+export function authGet<T>(url: string, options?: AuthOptions): Promise<T> {
+  return withAccessToken((token) => getJson<T>(url, { ...options, token }));
+}
+
+async function withAccessToken<T>(send: (token: string) => Promise<T>): Promise<T> {
   const token = tokens?.access;
   if (!token) return expireSession();
   try {
-    return await postJson<T>(url, body, { ...options, token });
+    return await send(token);
   } catch (e) {
     if (!isUnauthorized(e)) throw e;
   }
@@ -147,7 +158,7 @@ export async function authPost<T>(url: string, body: unknown, options?: Omit<Pos
   const retryToken = tokens?.access;
   if (!retryToken) return expireSession();
   try {
-    return await postJson<T>(url, body, { ...options, token: retryToken });
+    return await send(retryToken);
   } catch (e) {
     if (isUnauthorized(e)) return expireSession();
     throw e;

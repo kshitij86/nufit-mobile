@@ -11,6 +11,7 @@ import { Body, Eyebrow, Heading } from "../components/Primitives";
 import { useAuth } from "../state/Auth";
 import { userMessage } from "../services/http";
 import { RootNav, RootStackParamList } from "../navigation/types";
+import Wordmark from "../components/Wordmark";
 
 export default function Login() {
   const navigation = useNavigation<RootNav>();
@@ -42,7 +43,7 @@ export default function Login() {
         <>
           <PillButton label="Log in" loading={busy} disabled={!canSubmit} onPress={submit} />
           <PillButton label="Log in with phone · coming soon" variant="outline" disabled />
-          <TextButton label="New to Nufit? Create an account" onPress={() => navigation.navigate("Register")} />
+          <TextButton label="New to 360° Fitness? Create an account" onPress={() => navigation.navigate("Register")} />
         </>
       }
     >

@@ -3,7 +3,7 @@ import { QuizQuestion } from "../types";
 export const quizQuestions: QuizQuestion[] = [
   {
     id: "goals",
-    q: "What brings you to Nufit?",
+    q: "What brings you to 360° Fitness?",
     help: "Pick everything that applies — it decides which track you start from.",
     multi: true,
     opts: [

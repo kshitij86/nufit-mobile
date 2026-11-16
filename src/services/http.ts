@@ -23,7 +23,7 @@ export class NetworkError extends UserFacingError {
     super(
       timedOut
         ? "This is taking longer than usual. Please check your connection and try again."
-        : "Couldn't reach Nufit. Please check your connection and try again."
+        : "Couldn't reach 360° Fitness. Please check your connection and try again."
     );
     this.name = "NetworkError";
   }
@@ -58,7 +58,16 @@ export interface PostOptions {
   timeoutMs?: number;
 }
 
-export async function postJson<T>(
+export function postJson<T>(url: string, body: unknown, options?: PostOptions): Promise<T> {
+  return requestJson<T>("POST", url, body, options);
+}
+
+export function getJson<T>(url: string, options?: PostOptions): Promise<T> {
+  return requestJson<T>("GET", url, undefined, options);
+}
+
+async function requestJson<T>(
+  method: "GET" | "POST",
   url: string,
   body: unknown,
   { token, fallbackError, timeoutMs = REQUEST_TIMEOUT_MS }: PostOptions = {}
@@ -69,13 +78,13 @@ export async function postJson<T>(
   let text: string;
   try {
     res = await fetch(url, {
-      method: "POST",
+      method,
       headers: {
-        "Content-Type": "application/json",
+        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
         Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify(body),
+      body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     });
     text = await res.text();

@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton from "../components/PillButton";
+import { AccountHeader } from "../components/AccountButton";
 import { Eyebrow, Heading, Body } from "../components/Primitives";
 import { RootNav } from "../navigation/types";
 
@@ -12,16 +13,8 @@ export default function Welcome() {
 
   return (
     <ScreenScaffold
-      footer={
-        <>
-          <PillButton label="Find my programme" onPress={() => navigation.navigate("Quiz")} />
-          <PillButton
-            label="I already have an account"
-            variant="outline"
-            onPress={() => navigation.navigate("Mood")}
-          />
-        </>
-      }
+      header={<AccountHeader back={false} />}
+      footer={<PillButton label="Find my programme" onPress={() => navigation.navigate("Quiz")} />}
     >
       <View
         style={{
@@ -75,7 +68,7 @@ export default function Welcome() {
       <Eyebrow>Holistic · clinical · yours</Eyebrow>
       <Heading size={32}>Start where your body actually is today.</Heading>
       <Body style={{ marginTop: 14 }}>
-        Nufit asks how you feel before it tells you what to do. Dr. Kanika writes the plan; the app adapts the
+        360° Fitness asks how you feel before it tells you what to do. Dr. Kanika writes the plan; the app adapts the
         day around you.
       </Body>
     </ScreenScaffold>

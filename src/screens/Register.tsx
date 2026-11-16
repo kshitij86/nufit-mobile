@@ -149,7 +149,7 @@ export default function Register() {
       }
     >
       <View style={{ marginBottom: 24 }}>
-        <Eyebrow>New to Nufit</Eyebrow>
+        <Eyebrow>New to 360° Fitness</Eyebrow>
         <Heading size={28}>Create your account</Heading>
       </View>
 

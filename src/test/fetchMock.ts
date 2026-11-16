@@ -17,7 +17,7 @@ export function mockFetch(): FetchMock {
 export function requestOf(fetchMock: FetchMock, call: number) {
   const [url, init] = fetchMock.mock.calls[call];
   const headers = init.headers as Record<string, string>;
-  return { url, method: init.method, authorization: headers.Authorization, body: JSON.parse(init.body as string) };
+  return { url, method: init.method, authorization: headers.Authorization, body: init.body ? JSON.parse(init.body as string) : undefined };
 }
 
 export const tokens = (suffix: string) => ({

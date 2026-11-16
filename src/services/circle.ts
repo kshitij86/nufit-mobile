@@ -38,7 +38,7 @@ export function useCircle(): Resource<CircleData> {
 export async function postCircleMessage(text: string, author: { name: string; initials: string }): Promise<void> {
   messages = [
     ...messages,
-    { id: `you-${Date.now()}`, name: author.name, initials: author.initials, tint: colors.orangeTint, time: "Just now", text },
+    { id: `you-${Date.now()}`, name: author.name, initials: author.initials, tint: colors.blush, time: "Just now", text },
   ];
   invalidate(RESOURCE_KEY);
 }

@@ -1,13 +1,12 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { CircleMessage, IntakeAnswers, MeasureValues, MoodId } from "../types";
-import { initialCircleMessages } from "../data/circle";
-import { colors } from "../theme/colors";
-import { baseSchedule } from "../data/schedule";
+import { IntakeAnswers, MoodId } from "../types";
+
+export type PhotoConsent = "none" | "faceHidden" | "faceShown";
 
 export interface ConsentData {
   /** The signed-in user's name, filled in from their profile when they sign. */
   name: string;
-  photoConsent: PhotoConsen₹t;
+  photoConsent: PhotoConsent;
   signature: string;
 }
 
@@ -121,23 +120,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setData((prev) => ({
       ...prev,
       sleepChecklist: { ...prev.sleepChecklist, [id]: !prev.sleepChecklist[id] },
-    }));
-  }, []);
-
-  const postCircleMessage = useCallback((text: string) => {
-    setData((prev) => ({
-      ...prev,
-      circleMessages: [
-        ...prev.circleMessages,
-        {
-          id: `you-${Date.now()}`,
-          name: "You",
-          initials: "PS",
-          tint: colors.blush,
-          time: "Just now",
-          text,
-        },
-      ],
     }));
   }, []);
 

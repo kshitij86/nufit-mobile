@@ -46,8 +46,8 @@ export default function Reminders() {
               </Text>
             </View>
             <Switch
-              value={state[t.id]}
-              onValueChange={(v) => setState((s) => ({ ...s, [t.id]: v }))}
+              value={t.enabled}
+              onValueChange={(v) => void toggle(t.id, v)}
               trackColor={{ false: colors.hairline, true: colors.rose }}
               thumbColor="#fff"
             />

@@ -11,7 +11,6 @@ import { Body, Eyebrow, Heading } from "../components/Primitives";
 import { useAuth } from "../state/Auth";
 import { userMessage } from "../services/http";
 import { RootNav, RootStackParamList } from "../navigation/types";
-import Wordmark from "../components/Wordmark";
 
 export default function Login() {
   const navigation = useNavigation<RootNav>();
@@ -21,7 +20,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<React.ComponentRef<typeof TextInput>>(null);
 
   const canSubmit = email.trim().length > 0 && password.length > 0;
 

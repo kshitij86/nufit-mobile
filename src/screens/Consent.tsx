@@ -29,45 +29,9 @@ function RadioList<T extends string>({ options, value, onChange }: {
   onChange: (v: T) => void;
 }) {
   return (
-    <TextInput
-      value={value}
-      onChangeText={(t) => onChangeText(singleLine(t))}
-      maxLength={maxLength}
-      multiline
-      submitBehavior="blurAndSubmit"
-      returnKeyType="done"
-      placeholder={placeholder}
-      placeholderTextColor={colors.faint}
-      style={{
-        minWidth: width,
-        maxWidth: "100%",
-        borderBottomWidth: 1.5,
-        borderBottomColor: colors.rose,
-        paddingVertical: 2,
-        paddingHorizontal: 4,
-        fontFamily: "Nunito_700Bold",
-        color: colors.ink,
-        fontSize: 15,
-      }}
-    />
-  );
-}
-
-function TogglePair({
-  leftLabel,
-  rightLabel,
-  value,
-  onChange,
-}: {
-  leftLabel: string;
-  rightLabel: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <View style={{ flexDirection: "row", backgroundColor: colors.cream, borderRadius: 999, padding: 4 }}>
-      {[leftLabel, rightLabel].map((label, i) => {
-        const active = i === 0 ? value : !value;
+    <View accessibilityRole="radiogroup" style={{ gap: 8 }}>
+      {options.map(({ id, label }) => {
+        const active = id === value;
         return (
           <Pressable
             key={id}
@@ -75,28 +39,29 @@ function TogglePair({
             accessibilityRole="radio"
             accessibilityState={{ selected: active }}
             style={{
-              flex: 1,
-              paddingVertical: 10,
-              borderRadius: 999,
-              backgroundColor: active ? colors.rose : "transparent",
+              flexDirection: "row",
               alignItems: "center",
               gap: 12,
               paddingVertical: 12,
               paddingHorizontal: 14,
               borderRadius: 14,
               borderWidth: 1.5,
-              borderColor: active ? colors.orange : colors.hairline,
-              backgroundColor: active ? colors.orangeTint : "transparent",
+              borderColor: active ? colors.rose : colors.hairline,
+              backgroundColor: active ? colors.blushTint : "transparent",
             }}
           >
             <View
               style={{
-                color: active ? colors.roseInk : colors.secondary,
-                fontFamily: "Nunito_700Bold",
-                fontSize: 13,
+                width: 20,
+                height: 20,
+                borderRadius: 10,
+                borderWidth: 2,
+                borderColor: active ? colors.rose : colors.faint,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {active && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.orange }} />}
+              {active && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: colors.rose }} />}
             </View>
             <Body color={colors.ink} style={{ flex: 1 }}>{label}</Body>
           </Pressable>
@@ -113,7 +78,7 @@ function NameLine() {
     return (
       <Body color={colors.coralInk}>
         {userError}{" "}
-        <Text onPress={reloadUser} style={{ fontFamily: "Nunito_700Bold", color: colors.orange }}>Try again</Text>
+        <Text onPress={reloadUser} style={{ fontFamily: "Nunito_700Bold", color: colors.roseText }}>Try again</Text>
       </Body>
     );
   }
@@ -155,7 +120,7 @@ export default function Consent() {
         <NameLine />
         {terms.map((term) => (
           <View key={term} style={{ flexDirection: "row", gap: 10 }}>
-            <Body color={colors.orange}>•</Body>
+            <Body color={colors.roseText}>•</Body>
             <Body style={{ flex: 1 }}>{term}</Body>
           </View>
         ))}

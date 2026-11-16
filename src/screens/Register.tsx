@@ -64,13 +64,13 @@ export default function Register() {
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [today] = useState(() => new Date());
-  const firstNameRef = useRef<TextInput>(null);
-  const lastNameRef = useRef<TextInput>(null);
-  const emailRef = useRef<TextInput>(null);
-  const phoneRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
-  const passwordConfirmRef = useRef<TextInput>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const firstNameRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const lastNameRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const emailRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const phoneRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const passwordRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const passwordConfirmRef = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   // Each field's offset within the fields container, and the container's offset in the scroll content.
   const fieldsY = useRef(0);
   const fieldY = useRef<Partial<Record<RegistrationField, number>>>({});
@@ -85,7 +85,7 @@ export default function Register() {
     if (!first) return;
     const y = fieldY.current[first];
     if (y !== undefined) scrollRef.current?.scrollTo({ y: Math.max(0, fieldsY.current + y - 16), animated: true });
-    const inputs: Partial<Record<RegistrationField, React.RefObject<TextInput | null>>> = {
+    const inputs: Partial<Record<RegistrationField, React.RefObject<React.ComponentRef<typeof TextInput> | null>>> = {
       firstName: firstNameRef,
       lastName: lastNameRef,
       email: emailRef,

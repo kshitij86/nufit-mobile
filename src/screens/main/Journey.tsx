@@ -44,40 +44,34 @@ export default function Journey() {
   );
 
   return (
-    <ScreenScaffold header={<TopBar title="Journey" subtitle="Week 4 review" />}>
-      <Card style={{ marginTop: 14, marginBottom: 16 }}>
-        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.roseText, marginBottom: 10 }}>
-          Week 4 review
-        </Text>
-        <View style={{ flexDirection: "row", gap: 10, marginBottom: 14 }}>
-          <StatChip value="−0.9 kg" label="this week" />
-          <StatChip value="−4.1 cm" label="inches" />
-          <StatChip value="6/7" label="days on plan" />
-        </View>
-        <Body color={colors.ink} size={14} style={{ fontStyle: "italic" }}>
-          “Inches are moving faster than the scale — that is fat loss with muscle retained. Nothing changes in
-          week 5 except the evening snack.”
-        </Body>
-        <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 12, color: colors.muted, marginTop: 8 }}>
-          — Dr. Kanika, reviewed 25 Aug
-        </Text>
-      </Card>
+    <ScreenScaffold header={<TopBar title="Journey" subtitle={review?.weekLabel ?? "Your progress"} />}>
+      {review && (
+        <Card style={{ marginTop: 14, marginBottom: 16 }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.roseText, marginBottom: 10 }}>
+            {review.weekLabel}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 14 }}>
+            <StatChip value={weightChange === null ? "—" : `${formatSignedChange(weightChange)} kg`} label="since start" />
+            <StatChip value={inchesChange === null ? "—" : `${formatSignedChange(inchesChange)} in`} label="inches" />
+            {adherence && <StatChip value={`${adherence.daysOnPlanThisWeek}/7`} label="days on plan" />}
+          </View>
+          <Body color={colors.ink} size={14} style={{ fontStyle: "italic" }}>
+            “{review.quote}”
+          </Body>
+          <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 12, color: colors.muted, marginTop: 8 }}>
+            — {review.author}, reviewed {review.reviewedOn}
+          </Text>
+        </Card>
+      )}
 
       <Card style={{ marginBottom: 16 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
           <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 15, color: colors.ink }}>Weight trend</Text>
-          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 14, color: colors.roseText }}>
-            {change.toFixed(1)} kg
-          </Text>
-        </View>
-        <WeightChart values={weeklyWeights} width={320} height={110} />
-        <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 6 }}>
-          <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 11, color: colors.muted }}>
-            W1 · {weeklyWeights[0]} kg
-          </Text>
-          <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 11, color: colors.muted }}>
-            W4 · {weeklyWeights[weeklyWeights.length - 1]} kg
-          </Text>
+          {weightChange !== null && (
+            <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 14, color: colors.roseText }}>
+              {formatSignedChange(weightChange)} kg
+            </Text>
+          )}
         </View>
         {!measurements.data ? (
           <ResourceState resource={measurements} />

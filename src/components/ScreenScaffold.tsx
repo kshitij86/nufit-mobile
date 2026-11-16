@@ -19,8 +19,8 @@ const KEYBOARD_GAP = 24;
 // Scrolls whichever input is focused into view while the keyboard is up: when the keyboard
 // opens, and again whenever focus moves to another field (e.g. "next" from password to confirm).
 function useKeepFocusedInputVisible(
-  scrollRef: React.RefObject<ScrollView | null>,
-  contentRef: React.RefObject<View | null>,
+  scrollRef: React.RefObject<React.ComponentRef<typeof ScrollView> | null>,
+  contentRef: React.RefObject<React.ComponentRef<typeof View> | null>,
   enabled: boolean
 ) {
   const offset = useRef(0);
@@ -108,11 +108,11 @@ export default function ScreenScaffold({
   bg?: string;
   edges?: ("top" | "bottom" | "left" | "right")[];
   contentStyle?: ViewStyle;
-  scrollRef?: React.Ref<ScrollView | null>;
+  scrollRef?: React.Ref<React.ComponentRef<typeof ScrollView> | null>;
 }) {
-  const innerScrollRef = useRef<ScrollView>(null);
-  const contentRef = useRef<View>(null);
-  useImperativeHandle(scrollRef, () => innerScrollRef.current as ScrollView, []);
+  const innerScrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const contentRef = useRef<React.ComponentRef<typeof View>>(null);
+  useImperativeHandle(scrollRef, () => innerScrollRef.current as React.ComponentRef<typeof ScrollView>, []);
   const onScroll = useKeepFocusedInputVisible(innerScrollRef, contentRef, scroll);
 
   return (
@@ -126,7 +126,7 @@ export default function ScreenScaffold({
           {scroll ? (
             <ScrollView
               ref={innerScrollRef}
-              innerViewRef={contentRef as React.RefObject<View>}
+              innerViewRef={contentRef}
               style={{ flex: 1 }}
               contentContainerStyle={[
                 { paddingHorizontal: 20, paddingBottom: footer ? 8 : 24, paddingTop: header ? 8 : 16 },

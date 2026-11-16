@@ -14,7 +14,7 @@ export default function TextField({
   hint?: string;
   /** Rendered inside the field's border, before the input (e.g. a country code picker). */
   prefix?: React.ReactNode;
-  ref?: React.Ref<TextInput>;
+  ref?: React.Ref<React.ComponentRef<typeof TextInput>>;
 }) {
   const [focused, setFocused] = useState(false);
   return (

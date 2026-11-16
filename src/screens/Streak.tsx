@@ -39,21 +39,25 @@ export default function Streak() {
         </Pressable>
 
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Animated.View
-            style={{
-              width: 180,
-              height: 180,
-              borderRadius: 90,
-              backgroundColor: colors.rose,
-              alignItems: "center",
-              justifyContent: "center",
-              transform: [{ scale: pulse }],
-              marginBottom: 26,
-            }}
-          >
-            <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 56, color: colors.roseInk }}>{data.streak}</Text>
-            <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 14, color: colors.roseInk }}>steady days</Text>
-          </Animated.View>
+          {!streak ? (
+            <ResourceState resource={streakResource} />
+          ) : (
+            <>
+              <Animated.View
+                style={{
+                  width: 180,
+                  height: 180,
+                  borderRadius: 90,
+                  backgroundColor: colors.rose,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transform: [{ scale: pulse }],
+                  marginBottom: 26,
+                }}
+              >
+                <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 56, color: colors.roseInk }}>{streak.days}</Text>
+                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 14, color: colors.roseInk }}>steady days</Text>
+              </Animated.View>
 
               <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 24, color: colors.ink, textAlign: "center", marginBottom: 12 }}>
                 {streak.headline}

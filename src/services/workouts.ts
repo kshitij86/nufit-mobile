@@ -44,9 +44,9 @@ function toSession(raw: SessionResponse): Session | null {
     kind: typeof raw.kind === "string" ? raw.kind : "Movement",
     minutes: raw.minutes,
     kit: typeof raw.kit === "string" ? raw.kit : "",
-    tint: colors.orangeTint,
-    ink: "#B4703A",
-    ring: colors.orange,
+    tint: colors.blushTint,
+    ink: colors.roseText,
+    ring: colors.rose,
     state: stateLabel(raw.state, typeof raw.scheduled_on === "string" ? raw.scheduled_on : raw.id),
     steps,
   };

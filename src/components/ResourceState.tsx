@@ -14,13 +14,13 @@ export default function ResourceState({ resource, minHeight = 80 }: { resource: 
           <Text
             onPress={resource.reload}
             accessibilityRole="button"
-            style={{ fontFamily: "Nunito_700Bold", color: colors.orange }}
+            style={{ fontFamily: "Nunito_700Bold", color: colors.roseText }}
           >
             Try again
           </Text>
         </Body>
       ) : (
-        <ActivityIndicator color={colors.orange} />
+        <ActivityIndicator color={colors.rose} />
       )}
     </View>
   );

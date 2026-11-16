@@ -1,17 +1,12 @@
 import React from "react";
-import { Text, View, ViewStyle } from "react-native";
-import { colors } from "../theme/colors";
+import { View, ViewStyle } from "react-native";
+import { HorizontalLogo } from "./brand/BrandLockup";
 
-/** The app's logo: "360° fitness" large, with the byline set smaller underneath. `size` is the large line's font size. */
-export default function Wordmark({ size, align = "flex-start", style }: { size: number; align?: "flex-start" | "center"; style?: ViewStyle }) {
+/** The app's logo — the rose lotus lockup. `size` is the lotus mark's size. Prefer `brand/BrandLockup` directly. */
+export default function Wordmark({ size = 56, align = "flex-start", style }: { size?: number; align?: "flex-start" | "center"; style?: ViewStyle }) {
   return (
     <View style={[{ alignItems: align }, style]}>
-      <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: size, color: colors.ink, letterSpacing: -1 }}>
-        360<Text style={{ color: colors.orange }}>°</Text> fitness
-      </Text>
-      <Text style={{ fontFamily: "Outfit_600SemiBold", fontSize: Math.round(size * 0.38), color: colors.secondary, marginTop: 2 }}>
-        by dr. kanika chauhan
-      </Text>
+      <HorizontalLogo size={size} />
     </View>
   );
 }

@@ -96,7 +96,7 @@ export default function Today() {
       {empty && (
         <Card style={{ marginBottom: 18 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            {"icon" in empty && <Ionicons name={empty.icon} size={18} color={colors.orange} />}
+            {"icon" in empty && <Ionicons name={empty.icon} size={18} color={colors.rose} />}
             <Text style={{ flex: 1, fontFamily: "Outfit_700Bold", fontSize: 16, color: colors.ink }}>{empty.title}</Text>
           </View>
           <Body color={colors.muted} size={14}>{empty.body}</Body>
@@ -182,7 +182,7 @@ export default function Today() {
 
       {!!plan.data?.guidance?.notes.length && (
         <Card style={{ marginBottom: 14 }}>
-          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.orangeDark, marginBottom: 6 }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.roseText, marginBottom: 6 }}>
             From your care team
           </Text>
           {plan.data.guidance.notes.map((n, i) => (

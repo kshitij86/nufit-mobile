@@ -119,7 +119,7 @@ export default function Profile() {
         ) : userError ? (
           <Body color={colors.coralInk} size={14} style={{ textAlign: "center" }}>
             {userError}{" "}
-            <Text onPress={reloadUser} style={{ fontFamily: "Nunito_700Bold", color: colors.orange }}>Try again</Text>
+            <Text onPress={reloadUser} style={{ fontFamily: "Nunito_700Bold", color: colors.roseText }}>Try again</Text>
           </Body>
         ) : (
           <Body color={colors.muted} size={14}>Loading your details…</Body>

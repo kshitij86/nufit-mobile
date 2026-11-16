@@ -54,13 +54,23 @@ export default function MeasureDone() {
       </Body>
 
       <Card>
-        {measureSites.map((site, i) => (
-          <View key={site.id}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 12 }}>
-              <Text style={{ fontFamily: "Nunito_700Bold", color: colors.ink, fontSize: 15 }}>{site.name}</Text>
-              <Text style={{ fontFamily: "Outfit_700Bold", color: colors.roseText, fontSize: 15 }}>
-                {data.measurements[site.id] ?? "—"} in
-              </Text>
+        {!latest ? (
+          <ResourceState resource={history} />
+        ) : (
+          measureSites.map((site, i) => (
+            <View key={site.id}>
+              <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 12 }}>
+                <Text style={{ fontFamily: "Nunito_700Bold", color: colors.ink, fontSize: 15, flex: 1 }}>{site.name}</Text>
+                {previous && (
+                  <Text style={{ fontFamily: "Nunito_700Bold", color: colors.muted, fontSize: 13, marginRight: 12 }}>
+                    {formatInchesChange(latest.sites[site.id] - previous.sites[site.id])}
+                  </Text>
+                )}
+                <Text style={{ fontFamily: "Outfit_700Bold", color: colors.roseText, fontSize: 15 }}>
+                  {latest.sites[site.id].toFixed(1)} in
+                </Text>
+              </View>
+              {i < measureSites.length - 1 && <Divider />}
             </View>
           ))
         )}

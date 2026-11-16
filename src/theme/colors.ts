@@ -6,9 +6,14 @@ export const colors = {
   faint: "#B7B0C0",
   hairline: "#F1E7DB",
   card: "#FFFFFF",
-  orange: "#FF7E1D",
-  orangeDark: "#C4560A",
-  orangeTint: "#FFEEDD",
+  // Rose quartz — main action colour.
+  rose: "#EBA3B6", // buttons, progress, selected states, logo dot
+  roseInk: "#6F2840", // text/icons on rose fills
+  roseText: "#9E3F5F", // small labels, links, active nav items
+  roseShadow: "#D67896", // glow under buttons (use with shadowOpacity 0.22)
+  blush: "#F4C9D5", // avatars, in-between dots, illustration shapes
+  blushSoft: "#EDB3C3", // illustration shading
+  blushTint: "#FBEAF0", // pale card and chip backgrounds
   amber: "#FFD9B3",
   amberStrong: "#FFC93E",
   amberTint: "#FFF3D2",

@@ -1,8 +1,9 @@
 import React, { useRef, useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
+import { HorizontalLogo } from "../components/brand/BrandLockup";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton, { TextButton } from "../components/PillButton";
 import TextField from "../components/TextField";
@@ -46,9 +47,9 @@ export default function Login() {
       }
     >
       <View style={{ marginTop: 24, marginBottom: 28 }}>
-        <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 32, color: colors.ink, letterSpacing: -1, marginBottom: 24 }}>
-          nufit<Text style={{ color: colors.orange }}>.</Text>
-        </Text>
+        <View style={{ marginBottom: 28 }}>
+          <HorizontalLogo size={56} />
+        </View>
         <Eyebrow>Welcome back</Eyebrow>
         <Heading size={28}>Log in to your account</Heading>
       </View>

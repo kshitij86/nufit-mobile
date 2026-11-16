@@ -258,8 +258,8 @@ export default function Register() {
                     paddingHorizontal: 16,
                     borderRadius: 999,
                     borderWidth: 1.5,
-                    borderColor: selected ? colors.orange : colors.hairline,
-                    backgroundColor: selected ? colors.orangeTint : colors.card,
+                    borderColor: selected ? colors.rose : colors.hairline,
+                    backgroundColor: selected ? colors.blushTint : colors.card,
                   }}
                 >
                   <Text

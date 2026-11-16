@@ -30,14 +30,14 @@ export default function TopBar({ title, subtitle }: { title: string; subtitle: s
             flexDirection: "row",
             alignItems: "center",
             gap: 6,
-            backgroundColor: colors.orangeTint,
+            backgroundColor: colors.blushTint,
             borderRadius: 999,
             paddingVertical: 7,
             paddingHorizontal: 12,
           }}
         >
-          <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: colors.orange }} />
-          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.orangeDark }}>
+          <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: colors.rose }} />
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.roseText }}>
             {data.streak} steady
           </Text>
         </Pressable>

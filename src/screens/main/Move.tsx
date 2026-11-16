@@ -77,7 +77,7 @@ export default function Move() {
               style={{
                 fontFamily: "Nunito_800ExtraBold",
                 fontSize: 12,
-                color: s.state === "Today" ? colors.orangeDark : colors.muted,
+                color: s.state === "Today" ? colors.roseText : colors.muted,
               }}
             >
               {s.state}

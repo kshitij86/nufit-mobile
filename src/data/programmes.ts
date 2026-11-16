@@ -9,8 +9,8 @@ export const programmes: Programme[] = [
     weeksLabel: "12 weeks",
     priceLabel: "₹24,000",
     price: 24000,
-    tintBg: colors.orangeTint,
-    tintInk: "#B4703A",
+    tintBg: colors.blushTint,
+    tintInk: colors.roseText,
     artLabel: "SUNRISE WALK",
     blurb:
       "A full metabolic reset built on your intake, anthropometry and food history — recalibrated every fortnight by Dr. Kanika.",

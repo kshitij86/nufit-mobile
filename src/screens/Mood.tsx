@@ -53,8 +53,8 @@ export default function Mood() {
                 padding: 14,
                 borderRadius: 18,
                 borderWidth: 1.5,
-                borderColor: isSelected ? colors.orange : colors.hairline,
-                backgroundColor: isSelected ? colors.orangeTint : colors.card,
+                borderColor: isSelected ? colors.rose : colors.hairline,
+                backgroundColor: isSelected ? colors.blushTint : colors.card,
               }}
             >
               <View style={{ width: 14, height: 14, borderRadius: 7, backgroundColor: mood.dot }} />
@@ -89,12 +89,12 @@ export default function Mood() {
                 paddingVertical: 10,
                 paddingHorizontal: 14,
                 borderRadius: 999,
-                backgroundColor: active ? colors.orange : colors.card,
+                backgroundColor: active ? colors.rose : colors.card,
                 borderWidth: 1.5,
-                borderColor: active ? colors.orange : colors.hairline,
+                borderColor: active ? colors.rose : colors.hairline,
               }}
             >
-              <Text style={{ color: active ? "#fff" : colors.ink, fontFamily: "Nunito_700Bold", fontSize: 13 }}>
+              <Text style={{ color: active ? colors.roseInk : colors.ink, fontFamily: "Nunito_700Bold", fontSize: 13 }}>
                 {tag}
               </Text>
             </Pressable>

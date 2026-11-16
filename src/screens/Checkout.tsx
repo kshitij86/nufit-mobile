@@ -142,7 +142,7 @@ export default function Checkout() {
         </View>
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
           <Text style={{ fontFamily: "Outfit_700Bold", color: colors.ink, fontSize: 16 }}>Total payable</Text>
-          <Text style={{ fontFamily: "Outfit_700Bold", color: colors.orangeDark, fontSize: 16 }}>
+          <Text style={{ fontFamily: "Outfit_700Bold", color: colors.roseText, fontSize: 16 }}>
             {formatInr(total)}
           </Text>
         </View>
@@ -161,8 +161,8 @@ export default function Checkout() {
                 paddingHorizontal: 18,
                 borderRadius: 999,
                 borderWidth: 1.5,
-                borderColor: selected ? colors.orange : colors.hairline,
-                backgroundColor: selected ? colors.orangeTint : colors.card,
+                borderColor: selected ? colors.rose : colors.hairline,
+                backgroundColor: selected ? colors.blushTint : colors.card,
               }}
             >
               <Text

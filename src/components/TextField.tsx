@@ -27,7 +27,7 @@ export default function TextField({
           backgroundColor: colors.card,
           borderRadius: 16,
           borderWidth: 1.5,
-          borderColor: error ? colors.coralInk : focused ? colors.orange : colors.hairline,
+          borderColor: error ? colors.coralInk : focused ? colors.rose : colors.hairline,
         }}
       >
         {prefix}

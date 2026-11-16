@@ -46,7 +46,7 @@ export default function Recipe() {
         </View>
 
         <View style={{ paddingTop: 20 }}>
-          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.orange, marginBottom: 6 }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.roseText, marginBottom: 6 }}>
             {recipe.slot}
           </Text>
           <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 24, color: colors.ink, marginBottom: 14 }}>
@@ -76,8 +76,8 @@ export default function Recipe() {
           <View style={{ gap: 14 }}>
             {recipe.method.map((step, i) => (
               <View key={i} style={{ flexDirection: "row", gap: 12 }}>
-                <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.orangeTint, alignItems: "center", justifyContent: "center" }}>
-                  <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 12, color: colors.orangeDark }}>{i + 1}</Text>
+                <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: colors.blushTint, alignItems: "center", justifyContent: "center" }}>
+                  <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 12, color: colors.roseText }}>{i + 1}</Text>
                 </View>
                 <Body color={colors.ink} size={14} style={{ flex: 1 }}>{step}</Body>
               </View>

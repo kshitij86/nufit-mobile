@@ -52,8 +52,8 @@ function ChipsField({ opts, value, onToggle }: { opts: string[]; value: string[]
               paddingHorizontal: 16,
               borderRadius: 16,
               borderWidth: 1.5,
-              borderColor: selected ? colors.orange : colors.hairline,
-              backgroundColor: selected ? colors.orangeTint : colors.card,
+              borderColor: selected ? colors.rose : colors.hairline,
+              backgroundColor: selected ? colors.blushTint : colors.card,
             }}
           >
             <Text style={{ fontFamily: selected ? "Nunito_700Bold" : "Nunito_600SemiBold", color: colors.ink, fontSize: 15 }}>
@@ -130,7 +130,7 @@ export default function Intake() {
         </View>
       }
     >
-      <Text style={{ fontFamily: "Nunito_800ExtraBold", color: colors.orange, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+      <Text style={{ fontFamily: "Nunito_800ExtraBold", color: colors.roseText, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
         {step.section}
       </Text>
       <Heading size={22}>{step.heading}</Heading>
@@ -210,22 +210,22 @@ export default function Intake() {
           <View
             style={{
               marginTop: 14,
-              backgroundColor: colors.orangeTint,
+              backgroundColor: colors.blushTint,
               borderRadius: 16,
               padding: 16,
             }}
           >
             {bmi ? (
               <>
-                <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 24, color: colors.orangeDark }}>
+                <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 24, color: colors.roseText }}>
                   BMI {bmi.toFixed(1)}
                 </Text>
-                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 13, color: colors.orangeDark, marginTop: 4 }}>
+                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 13, color: colors.roseText, marginTop: 4 }}>
                   {bmiLabel(bmi)}
                 </Text>
               </>
             ) : (
-              <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.orangeDark }}>
+              <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.roseText }}>
                 BMI appears once both are filled
               </Text>
             )}
@@ -305,10 +305,10 @@ export default function Intake() {
                           paddingVertical: 8,
                           paddingHorizontal: 16,
                           borderRadius: 999,
-                          backgroundColor: active ? colors.orange : "transparent",
+                          backgroundColor: active ? colors.rose : "transparent",
                         }}
                       >
-                        <Text style={{ color: active ? "#fff" : colors.secondary, fontFamily: "Nunito_700Bold", fontSize: 12 }}>
+                        <Text style={{ color: active ? colors.roseInk : colors.secondary, fontFamily: "Nunito_700Bold", fontSize: 12 }}>
                           {label}
                         </Text>
                       </Pressable>

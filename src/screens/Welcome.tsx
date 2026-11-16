@@ -27,7 +27,7 @@ export default function Welcome() {
         style={{
           height: 300,
           borderRadius: 28,
-          backgroundColor: colors.orangeTint,
+          backgroundColor: colors.blushTint,
           marginTop: 12,
           marginBottom: 24,
           alignItems: "center",
@@ -41,7 +41,7 @@ export default function Welcome() {
             width: 180,
             height: 180,
             borderRadius: 90,
-            backgroundColor: "#FFDDB8",
+            backgroundColor: colors.blushSoft,
             top: 40,
             left: 40,
           }}
@@ -52,7 +52,7 @@ export default function Welcome() {
             width: 140,
             height: 140,
             borderRadius: 70,
-            backgroundColor: colors.orange,
+            backgroundColor: colors.blush,
             opacity: 0.85,
             bottom: 36,
             right: 50,
@@ -62,7 +62,7 @@ export default function Welcome() {
           style={{
             position: "absolute",
             bottom: 16,
-            color: "#B4703A",
+            color: colors.roseText,
             fontFamily: "Nunito_800ExtraBold",
             fontSize: 11,
             letterSpacing: 1,

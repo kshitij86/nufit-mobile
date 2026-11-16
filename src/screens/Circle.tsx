@@ -42,9 +42,9 @@ export default function Circle() {
           />
           <Pressable
             onPress={send}
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center" }}
+            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.rose, alignItems: "center", justifyContent: "center" }}
           >
-            <Ionicons name="send" size={18} color="#fff" />
+            <Ionicons name="send" size={18} color={colors.roseInk} />
           </Pressable>
         </View>
       }

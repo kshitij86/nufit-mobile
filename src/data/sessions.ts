@@ -8,9 +8,9 @@ export const sessions: Session[] = [
     kind: "Movement",
     minutes: 24,
     kit: "Band + mat",
-    tint: colors.orangeTint,
-    ink: "#B4703A",
-    ring: colors.orange,
+    tint: colors.blushTint,
+    ink: colors.roseText,
+    ring: colors.rose,
     state: "Today",
     steps: [
       {

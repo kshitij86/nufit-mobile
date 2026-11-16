@@ -54,7 +54,7 @@ export default function MeasureDone() {
           <View key={site.id}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 12 }}>
               <Text style={{ fontFamily: "Nunito_700Bold", color: colors.ink, fontSize: 15 }}>{site.name}</Text>
-              <Text style={{ fontFamily: "Outfit_700Bold", color: colors.orangeDark, fontSize: 15 }}>
+              <Text style={{ fontFamily: "Outfit_700Bold", color: colors.roseText, fontSize: 15 }}>
                 {data.measurements[site.id] ?? "—"} in
               </Text>
             </View>

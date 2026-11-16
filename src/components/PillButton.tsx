@@ -27,13 +27,13 @@ export default function PillButton({
     variant === "primary"
       ? isDisabled
         ? "#E8E2D8"
-        : colors.orange
+        : colors.rose
       : variant === "secondary"
-      ? colors.orangeTint
+      ? colors.blushTint
       : "transparent";
 
   const textColor =
-    variant === "primary" ? (isDisabled ? colors.faint : "#FFFFFF") : disabled ? colors.faint : colors.orangeDark;
+    variant === "primary" ? (isDisabled ? colors.faint : colors.roseInk) : disabled ? colors.faint : colors.roseText;
 
   const borderColor = variant === "outline" ? colors.hairline : "transparent";
   const [pressed, setPressed] = useState(false);
@@ -56,8 +56,8 @@ export default function PillButton({
         alignItems: "center",
         justifyContent: "center",
         opacity: pressed && !isDisabled ? 0.85 : 1,
-        shadowColor: "#FF7E1D",
-        shadowOpacity: variant === "primary" && glow && !isDisabled ? 0.3 : 0,
+        shadowColor: colors.roseShadow,
+        shadowOpacity: variant === "primary" && glow && !isDisabled ? 0.22 : 0,
         shadowRadius: 14,
         shadowOffset: { width: 0, height: 10 },
         elevation: variant === "primary" && glow && !isDisabled ? 4 : 0,
@@ -83,7 +83,7 @@ export default function PillButton({
 export function TextButton({
   label,
   onPress,
-  color = colors.orangeDark,
+  color = colors.roseText,
 }: {
   label: string;
   onPress?: () => void;

@@ -2,7 +2,7 @@ import { CircleMessage } from "../types";
 import { colors } from "../theme/colors";
 
 export const circleMembers = [
-  { initials: "MR", tint: colors.orangeTint },
+  { initials: "MR", tint: colors.blush },
   { initials: "AT", tint: colors.sky },
   { initials: "SK", tint: colors.lilac },
   { initials: "NV", tint: colors.sage },
@@ -15,7 +15,7 @@ export const initialCircleMessages: CircleMessage[] = [
     id: "m1",
     name: "Meera R.",
     initials: "MR",
-    tint: colors.orangeTint,
+    tint: colors.blush,
     time: "Yesterday",
     text: "Logged day 18. The 6 pm chana genuinely stopped the night snacking for me — took about a week to settle.",
   },

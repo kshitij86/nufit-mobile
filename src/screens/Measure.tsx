@@ -50,7 +50,7 @@ export default function Measure() {
                   flex: i === siteIndex ? 2 : 1,
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: i === siteIndex ? colors.orange : i < siteIndex ? colors.amber : colors.hairline,
+                  backgroundColor: i === siteIndex ? colors.rose : i < siteIndex ? colors.blush : colors.hairline,
                 }}
               />
             ))}
@@ -69,7 +69,7 @@ export default function Measure() {
         <BodySilhouette region={site.region} gender={data.gender ?? "female"} />
       </Card>
 
-      <Text style={{ fontFamily: "Nunito_800ExtraBold", color: colors.orange, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+      <Text style={{ fontFamily: "Nunito_800ExtraBold", color: colors.roseText, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
         Site {siteIndex + 1} of {measureSites.length}
       </Text>
       <Text style={{ fontFamily: "Outfit_700Bold", color: colors.ink, fontSize: 22, marginBottom: 10 }}>

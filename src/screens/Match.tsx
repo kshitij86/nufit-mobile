@@ -44,12 +44,12 @@ export default function Match() {
           width: 56,
           height: 56,
           borderRadius: 28,
-          backgroundColor: colors.orange,
+          backgroundColor: colors.rose,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Ionicons name="checkmark" size={30} color="#fff" />
+        <Ionicons name="checkmark" size={30} color={colors.roseInk} />
       </Animated.View>
 
       <Heading size={24}>Based on your answers, start here.</Heading>

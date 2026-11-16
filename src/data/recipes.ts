@@ -9,8 +9,8 @@ export const recipes: Recipe[] = [
     kcal: 380,
     protein: 22,
     minutes: 15,
-    tint: colors.orangeTint,
-    ink: "#B4703A",
+    tint: colors.blushTint,
+    ink: colors.roseText,
     ingredients: [
       ["Besan", "1 katori"],
       ["Onion, tomato, coriander", "½ cup chopped"],

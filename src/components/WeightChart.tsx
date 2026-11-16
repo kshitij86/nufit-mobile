@@ -22,13 +22,13 @@ export default function WeightChart({ values, width = 320, height = 120 }: { val
     <Svg width={width} height={height}>
       <Defs>
         <LinearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor={colors.orange} stopOpacity={0.28} />
-          <Stop offset="1" stopColor={colors.orange} stopOpacity={0} />
+          <Stop offset="0" stopColor={colors.rose} stopOpacity={0.28} />
+          <Stop offset="1" stopColor={colors.rose} stopOpacity={0} />
         </LinearGradient>
       </Defs>
       <Path d={areaPath} fill="url(#areaFill)" />
-      <Path d={linePath} stroke={colors.orange} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <Circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r={5} fill={colors.orange} />
+      <Path d={linePath} stroke={colors.rose} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <Circle cx={points[points.length - 1].x} cy={points[points.length - 1].y} r={5} fill={colors.rose} />
     </Svg>
   );
 }

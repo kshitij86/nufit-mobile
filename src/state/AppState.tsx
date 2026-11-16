@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { CircleMessage, IntakeAnswers, MeasureValues, MoodId } from "../types";
 import { initialCircleMessages } from "../data/circle";
+import { colors } from "../theme/colors";
 import { baseSchedule } from "../data/schedule";
 
 export interface ConsentData {
@@ -142,7 +143,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           id: `you-${Date.now()}`,
           name: "You",
           initials: "PS",
-          tint: "#FFEEDD",
+          tint: colors.blush,
           time: "Just now",
           text,
         },

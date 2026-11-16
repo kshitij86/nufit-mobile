@@ -6,8 +6,8 @@ export const moodOptions: MoodOption[] = [
     id: "energised",
     label: "Energised",
     sub: "Slept well, ready to move",
-    dot: colors.orange,
-    bg: colors.orangeTint,
+    dot: colors.rose,
+    bg: colors.blushTint,
     note: "Good — we will use it. Strength session stays at 5 pm and dinner protein goes up by 10 g.",
   },
   {

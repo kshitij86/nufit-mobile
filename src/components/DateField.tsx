@@ -69,7 +69,7 @@ export default function DateField({
           backgroundColor: colors.card,
           borderRadius: 16,
           borderWidth: 1.5,
-          borderColor: error ? colors.coralInk : sheetOpen ? colors.orange : colors.hairline,
+          borderColor: error ? colors.coralInk : sheetOpen ? colors.rose : colors.hairline,
           paddingVertical: 14,
           paddingHorizontal: 16,
         }}
@@ -120,7 +120,7 @@ export default function DateField({
                 hitSlop={10}
                 accessibilityRole="button"
               >
-                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 16, color: colors.orange }}>Done</Text>
+                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 16, color: colors.roseText }}>Done</Text>
               </Pressable>
             </View>
             <DateTimePicker

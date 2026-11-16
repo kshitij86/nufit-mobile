@@ -82,8 +82,8 @@ export default function Quiz() {
                 paddingHorizontal: 16,
                 borderRadius: 16,
                 borderWidth: 1.5,
-                borderColor: isSelected ? colors.orange : colors.hairline,
-                backgroundColor: isSelected ? colors.orangeTint : colors.card,
+                borderColor: isSelected ? colors.rose : colors.hairline,
+                backgroundColor: isSelected ? colors.blushTint : colors.card,
               }}
             >
               <View
@@ -93,7 +93,7 @@ export default function Quiz() {
                   borderRadius: 11,
                   borderWidth: isSelected ? 0 : 1.5,
                   borderColor: colors.faint,
-                  backgroundColor: isSelected ? colors.orange : "transparent",
+                  backgroundColor: isSelected ? colors.rose : "transparent",
                   marginRight: 12,
                   alignItems: "center",
                   justifyContent: "center",

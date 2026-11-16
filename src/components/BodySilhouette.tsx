@@ -99,12 +99,12 @@ export default function BodySilhouette({ region, gender }: { region: Region; gen
             width={box.w}
             height={box.h}
             rx={10}
-            fill={colors.orange}
+            fill={colors.rose}
             opacity={glow}
           />
 
           {/* dashed guide line */}
-          <Line x1={20} y1={guideY} x2={200} y2={guideY} stroke={colors.orangeDark} strokeWidth={1.5} strokeDasharray="4,5" />
+          <Line x1={20} y1={guideY} x2={200} y2={guideY} stroke={colors.roseText} strokeWidth={1.5} strokeDasharray="4,5" />
 
           {/* tape ellipse */}
           <AnimatedEllipse
@@ -113,11 +113,11 @@ export default function BodySilhouette({ region, gender }: { region: Region; gen
             rx={box.w / 2 + 14}
             ry={8}
             fill="none"
-            stroke={colors.orangeDark}
+            stroke={colors.roseText}
             strokeWidth={1.5}
             strokeDasharray="3,4"
           />
-          <Circle cx={box.x + box.w + 12} cy={guideY} r={4} fill={colors.orangeDark} />
+          <Circle cx={box.x + box.w + 12} cy={guideY} r={4} fill={colors.roseText} />
         </Svg>
       </Animated.View>
       <Text

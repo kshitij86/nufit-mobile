@@ -25,7 +25,7 @@ export default function Today() {
             Checked in · {mood.label}
           </Text>
           <Body color={colors.ink} size={14} style={{ marginBottom: 10 }}>{mood.note}</Body>
-          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 13, color: colors.orangeDark }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 13, color: colors.roseText }}>
             Change how I feel →
           </Text>
         </Card>
@@ -75,7 +75,7 @@ export default function Today() {
                           {item.subtitle}
                         </Text>
                       </View>
-                      <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.orangeDark }}>
+                      <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, color: colors.roseText }}>
                         Open session →
                       </Text>
                     </Pressable>
@@ -107,8 +107,8 @@ export default function Today() {
                       </Text>
                     </View>
                     {item.macro && (
-                      <View style={{ backgroundColor: colors.orangeTint, borderRadius: 999, paddingVertical: 5, paddingHorizontal: 10 }}>
-                        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 10, color: colors.orangeDark }}>
+                      <View style={{ backgroundColor: colors.blushTint, borderRadius: 999, paddingVertical: 5, paddingHorizontal: 10 }}>
+                        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 10, color: colors.roseText }}>
                           {item.macro}
                         </Text>
                       </View>

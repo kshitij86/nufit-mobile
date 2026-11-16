@@ -26,7 +26,7 @@ function buildHtml({ order, description, method, prefill }: RazorpayCheckoutOpti
     name: "Nufit",
     description,
     prefill: { ...prefill, method },
-    theme: { color: colors.orange },
+    theme: { color: colors.rose },
   };
   // Escape "<" so option values can't close the <script> tag.
   const json = JSON.stringify(options).replace(/</g, "\\u003c");
@@ -100,7 +100,7 @@ export default function RazorpayCheckoutModal({
 
   return (
     <Modal visible={!!options} animationType="slide" onRequestClose={() => onResult({ status: "dismissed" })}>
-      <View style={{ height: insets.top, backgroundColor: colors.orange }} />
+      <View style={{ height: insets.top, backgroundColor: colors.rose }} />
       <View style={{ flex: 1, backgroundColor: colors.card, paddingBottom: insets.bottom }}>
         {options && (
           <WebView
@@ -114,7 +114,7 @@ export default function RazorpayCheckoutModal({
             startInLoadingState
             renderLoading={() => (
               <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-                <ActivityIndicator color={colors.orange} />
+                <ActivityIndicator color={colors.rose} />
               </View>
             )}
             onShouldStartLoadWithRequest={(req) => {

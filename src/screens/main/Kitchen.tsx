@@ -30,12 +30,12 @@ export default function Kitchen() {
                   paddingVertical: 10,
                   paddingHorizontal: 16,
                   borderRadius: 999,
-                  backgroundColor: active ? colors.orange : colors.card,
+                  backgroundColor: active ? colors.rose : colors.card,
                   borderWidth: 1.5,
-                  borderColor: active ? colors.orange : colors.hairline,
+                  borderColor: active ? colors.rose : colors.hairline,
                 }}
               >
-                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 13, color: active ? "#fff" : colors.ink }}>
+                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 13, color: active ? colors.roseInk : colors.ink }}>
                   {f}
                 </Text>
               </Pressable>

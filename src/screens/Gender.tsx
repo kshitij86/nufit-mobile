@@ -62,7 +62,7 @@ export default function Gender() {
                 padding: 14,
                 borderRadius: 18,
                 borderWidth: 1.5,
-                borderColor: selected ? colors.orange : colors.hairline,
+                borderColor: selected ? colors.rose : colors.hairline,
                 backgroundColor: colors.card,
               }}
             >
@@ -85,7 +85,7 @@ export default function Gender() {
                 </Text>
               </View>
               {selected && (
-                <Ionicons name="checkmark-circle" size={22} color={colors.orange} />
+                <Ionicons name="checkmark-circle" size={22} color={colors.rose} />
               )}
             </Pressable>
           );

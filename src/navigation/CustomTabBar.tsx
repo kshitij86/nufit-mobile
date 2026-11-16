@@ -23,16 +23,16 @@ function TabItem({ label, focused, onPress }: { label: string; focused: boolean;
           borderRadius: 17,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: focused ? colors.orangeTint : "transparent",
+          backgroundColor: focused ? colors.blushTint : "transparent",
         }}
       >
-        <Ionicons name={icons[label]} size={18} color={focused ? colors.orange : colors.muted} />
+        <Ionicons name={icons[label]} size={18} color={focused ? colors.roseText : colors.muted} />
       </View>
       <Text
         style={{
           fontFamily: focused ? "Nunito_800ExtraBold" : "Nunito_600SemiBold",
           fontSize: 11,
-          color: focused ? colors.orangeDark : colors.muted,
+          color: focused ? colors.roseText : colors.muted,
         }}
       >
         {label}
@@ -78,17 +78,17 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             width: 56,
             height: 56,
             borderRadius: 28,
-            backgroundColor: colors.orange,
+            backgroundColor: colors.rose,
             alignItems: "center",
             justifyContent: "center",
-            shadowColor: "#FF7E1D",
-            shadowOpacity: 0.35,
+            shadowColor: colors.roseShadow,
+            shadowOpacity: 0.22,
             shadowRadius: 14,
             shadowOffset: { width: 0, height: 8 },
             elevation: 6,
           }}
         >
-          <Ionicons name="add" size={28} color="#fff" />
+          <Ionicons name="add" size={28} color={colors.roseInk} />
         </Pressable>
       </View>
 

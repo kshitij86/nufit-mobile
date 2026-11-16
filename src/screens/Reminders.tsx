@@ -37,8 +37,8 @@ export default function Reminders() {
               padding: 14,
             }}
           >
-            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.orangeTint, alignItems: "center", justifyContent: "center" }}>
-              <Ionicons name={t.icon} size={18} color={colors.orangeDark} />
+            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.blushTint, alignItems: "center", justifyContent: "center" }}>
+              <Ionicons name={t.icon} size={18} color={colors.roseText} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 15, color: colors.ink }}>{t.name}</Text>
@@ -49,7 +49,7 @@ export default function Reminders() {
             <Switch
               value={state[t.id]}
               onValueChange={(v) => setState((s) => ({ ...s, [t.id]: v }))}
-              trackColor={{ false: colors.hairline, true: colors.orange }}
+              trackColor={{ false: colors.hairline, true: colors.rose }}
               thumbColor="#fff"
             />
           </View>

@@ -74,8 +74,8 @@ export default function Profile() {
           accessibilityRole="button"
           style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 18 }}
         >
-          <Ionicons name="log-out-outline" size={18} color={colors.orange} />
-          <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.orange }}>Log out</Text>
+          <Ionicons name="log-out-outline" size={18} color={colors.roseText} />
+          <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.roseText }}>Log out</Text>
         </Pressable>
       </View>
     </ScreenScaffold>

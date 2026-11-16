@@ -34,7 +34,7 @@ export function Card({
   );
 }
 
-export function Eyebrow({ children, color = colors.orange }: { children: React.ReactNode; color?: string }) {
+export function Eyebrow({ children, color = colors.roseText }: { children: React.ReactNode; color?: string }) {
   return (
     <Text
       style={{
@@ -101,7 +101,7 @@ export function BackButton({ onPress }: { onPress?: () => void }) {
   );
 }
 
-export function ProgressBar({ progress, color = colors.orange, track = colors.hairline, height = 6 }: {
+export function ProgressBar({ progress, color = colors.rose, track = colors.hairline, height = 6 }: {
   progress: number;
   color?: string;
   track?: string;
@@ -121,7 +121,7 @@ export function ProgressBar({ progress, color = colors.orange, track = colors.ha
   );
 }
 
-export function StatChip({ value, label, tint = colors.orangeTint, ink = colors.orangeDark }: {
+export function StatChip({ value, label, tint = colors.blushTint, ink = colors.roseText }: {
   value: string;
   label: string;
   tint?: string;
@@ -144,7 +144,7 @@ export function StatChip({ value, label, tint = colors.orangeTint, ink = colors.
   );
 }
 
-export function CheckBadge({ size = 20, bg = colors.orange, checked = true }: { size?: number; bg?: string; checked?: boolean }) {
+export function CheckBadge({ size = 20, bg = colors.rose, checked = true }: { size?: number; bg?: string; checked?: boolean }) {
   return (
     <View
       style={{
@@ -158,7 +158,7 @@ export function CheckBadge({ size = 20, bg = colors.orange, checked = true }: { 
         justifyContent: "center",
       }}
     >
-      {checked && <Ionicons name="checkmark" size={size * 0.65} color="#FFFFFF" />}
+      {checked && <Ionicons name="checkmark" size={size * 0.65} color={bg === colors.rose ? colors.roseInk : "#FFFFFF"} />}
     </View>
   );
 }

@@ -33,7 +33,7 @@ function InlineInput({ value, onChangeText, placeholder, width = 140, maxLength 
         minWidth: width,
         maxWidth: "100%",
         borderBottomWidth: 1.5,
-        borderBottomColor: colors.orange,
+        borderBottomColor: colors.rose,
         paddingVertical: 2,
         paddingHorizontal: 4,
         fontFamily: "Nunito_700Bold",
@@ -67,13 +67,13 @@ function TogglePair({
               flex: 1,
               paddingVertical: 10,
               borderRadius: 999,
-              backgroundColor: active ? colors.orange : "transparent",
+              backgroundColor: active ? colors.rose : "transparent",
               alignItems: "center",
             }}
           >
             <Text
               style={{
-                color: active ? "#fff" : colors.secondary,
+                color: active ? colors.roseInk : colors.secondary,
                 fontFamily: "Nunito_700Bold",
                 fontSize: 13,
               }}

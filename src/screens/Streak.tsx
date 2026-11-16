@@ -9,7 +9,7 @@ import { useAppState } from "../state/AppState";
 import { streakWeek } from "../data/journey";
 import { RootNav } from "../navigation/types";
 
-const dotColor = { full: colors.orange, partial: colors.amberStrong, missed: colors.hairline };
+const dotColor = { full: colors.rose, partial: colors.amberStrong, missed: colors.hairline };
 
 export default function Streak() {
   const navigation = useNavigation<RootNav>();
@@ -28,7 +28,7 @@ export default function Streak() {
   }, [pulse]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.orangeTint }}>
+    <View style={{ flex: 1, backgroundColor: colors.blushTint }}>
       <SafeAreaView style={{ flex: 1, paddingHorizontal: 24 }}>
         <Pressable
           onPress={() => navigation.goBack()}
@@ -43,15 +43,15 @@ export default function Streak() {
               width: 180,
               height: 180,
               borderRadius: 90,
-              backgroundColor: colors.orange,
+              backgroundColor: colors.rose,
               alignItems: "center",
               justifyContent: "center",
               transform: [{ scale: pulse }],
               marginBottom: 26,
             }}
           >
-            <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 56, color: "#fff" }}>{data.streak}</Text>
-            <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 14, color: "#fff" }}>steady days</Text>
+            <Text style={{ fontFamily: "Outfit_800ExtraBold", fontSize: 56, color: colors.roseInk }}>{data.streak}</Text>
+            <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 14, color: colors.roseInk }}>steady days</Text>
           </Animated.View>
 
           <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 24, color: colors.ink, textAlign: "center", marginBottom: 12 }}>

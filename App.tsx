@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SplashScreen from "expo-splash-screen";
 import {
   useFonts as useOutfitFonts,
+  Outfit_300Light,
   Outfit_600SemiBold,
   Outfit_700Bold,
   Outfit_800ExtraBold,
@@ -18,6 +19,7 @@ import {
   Nunito_700Bold,
   Nunito_800ExtraBold,
 } from "@expo-google-fonts/nunito";
+import { useFonts as useMarcellusFonts, MarcellusSC_400Regular } from "@expo-google-fonts/marcellus-sc";
 
 import { AppStateProvider } from "./src/state/AppState";
 import { AuthProvider, useAuth } from "./src/state/Auth";
@@ -41,15 +43,17 @@ const navTheme = {
     ...DefaultTheme.colors,
     background: colors.cream,
     card: colors.cream,
-    primary: colors.orange,
+    primary: colors.rose,
   },
 };
 
 export default function App() {
-  const [outfitLoaded] = useOutfitFonts({ Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold });
+  const [outfitLoaded] = useOutfitFonts({ Outfit_300Light, Outfit_600SemiBold, Outfit_700Bold, Outfit_800ExtraBold });
   const [nunitoLoaded] = useNunitoFonts({ Nunito_400Regular, Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold });
 
-  const fontsLoaded = outfitLoaded && nunitoLoaded;
+  const [marcellusLoaded] = useMarcellusFonts({ MarcellusSC_400Regular });
+
+  const fontsLoaded = outfitLoaded && nunitoLoaded && marcellusLoaded;
   const [splashDone, setSplashDone] = useState(false);
 
   const onSplashLayout = useCallback(() => {

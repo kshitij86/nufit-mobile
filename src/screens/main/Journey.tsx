@@ -19,7 +19,7 @@ export default function Journey() {
   return (
     <ScreenScaffold header={<TopBar title="Journey" subtitle="Week 4 review" />}>
       <Card style={{ marginTop: 14, marginBottom: 16 }}>
-        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.orange, marginBottom: 10 }}>
+        <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.roseText, marginBottom: 10 }}>
           Week 4 review
         </Text>
         <View style={{ flexDirection: "row", gap: 10, marginBottom: 14 }}>
@@ -39,7 +39,7 @@ export default function Journey() {
       <Card style={{ marginBottom: 16 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 10 }}>
           <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 15, color: colors.ink }}>Weight trend</Text>
-          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 14, color: colors.orangeDark }}>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 14, color: colors.roseText }}>
             {change.toFixed(1)} kg
           </Text>
         </View>

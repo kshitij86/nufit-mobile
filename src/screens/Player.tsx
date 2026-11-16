@@ -151,12 +151,12 @@ export default function Player() {
                 width: 68,
                 height: 68,
                 borderRadius: 34,
-                backgroundColor: colors.orange,
+                backgroundColor: colors.rose,
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Text style={{ fontFamily: "Nunito_800ExtraBold", color: "#fff", fontSize: 13 }}>{buttonLabel}</Text>
+              <Text style={{ fontFamily: "Nunito_800ExtraBold", color: colors.roseInk, fontSize: 13 }}>{buttonLabel}</Text>
             </Pressable>
             <Pressable onPress={() => goStep(1)} style={{ padding: 10 }}>
               <Ionicons name="play-skip-forward" size={22} color={colors.ink} />

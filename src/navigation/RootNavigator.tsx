@@ -11,8 +11,7 @@ import Match from "../screens/Match";
 import Plans from "../screens/Plans";
 import Consent from "../screens/Consent";
 import Checkout from "../screens/Checkout";
-import Intake from "../screens/Intake";
-import Gender from "../screens/Gender";
+import Questionnaire from "../screens/Questionnaire";
 import Measure from "../screens/Measure";
 import MeasureDone from "../screens/MeasureDone";
 import Mood from "../screens/Mood";
@@ -26,8 +25,10 @@ import Streak from "../screens/Streak";
 import Reminders from "../screens/Reminders";
 import Profile from "../screens/Profile";
 import { useAuth } from "../state/Auth";
-import { useProgrammeStatus } from "../services/journey";
+import { ProgrammeState, useProgrammeStatus } from "../services/journey";
+import { useQuestionnaire } from "../services/questionnaire";
 import ResourceState from "../components/ResourceState";
+import { Resource } from "../services/resource";
 import { TextButton } from "../components/PillButton";
 import { useAppState } from "../state/AppState";
 import { colors } from "../theme/colors";
@@ -58,12 +59,24 @@ function OnboardingNavigator() {
   );
 }
 
-/** Bought a programme: the post-purchase intake and the app itself. */
+/**
+ * Bought a programme but hasn't sent the questionnaire: nothing but the questionnaire, plus Profile
+ * to log out. The plan can't be written without it.
+ */
+function QuestionnaireNavigator() {
+  return (
+    <Stack.Navigator initialRouteName="Questionnaire" screenOptions={screenOptions}>
+      <Stack.Screen name="Questionnaire" component={Questionnaire} />
+      <Stack.Screen name="Profile" component={Profile} />
+    </Stack.Navigator>
+  );
+}
+
+/** Bought a programme and sent the questionnaire: the app itself. */
 function MemberNavigator({ initialRouteName }: { initialRouteName: MemberStartRoute }) {
   return (
     <Stack.Navigator initialRouteName={initialRouteName} screenOptions={screenOptions}>
-      <Stack.Screen name="Intake" component={Intake} />
-      <Stack.Screen name="Gender" component={Gender} />
+      <Stack.Screen name="Questionnaire" component={Questionnaire} />
       <Stack.Screen name="Measure" component={Measure} />
       <Stack.Screen name="MeasureDone" component={MeasureDone} />
       <Stack.Screen name="Mood" component={Mood} />
@@ -80,26 +93,43 @@ function MemberNavigator({ initialRouteName }: { initialRouteName: MemberStartRo
   );
 }
 
-/** Picks onboarding or member from the programme status, which is refreshed after a payment. */
+/** Picks onboarding, questionnaire or member from the programme and questionnaire status. */
 function SignedIn() {
   const programme = useProgrammeStatus();
   const { signOut } = useAuth();
   const { data } = useAppState();
-
-  if (!programme.data) {
-    // Until the status loads there's no state to show, so a failure must still let the user out.
-    return (
-      <View style={{ flex: 1, justifyContent: "center", padding: 24, gap: 8, backgroundColor: colors.cream }}>
-        <ResourceState resource={programme} />
-        {programme.error && <TextButton label="Log out" onPress={() => void signOut()} />}
-      </View>
-    );
-  }
-
-  return stageFor(programme.data.status) === "onboarding" ? (
+  const bought = !!programme.data && programme.data.status !== "none";
+  // Only members who bought can open the questionnaire, so only they load it.
+  return bought ? (
+    <Bought status={programme.data!.status} afterQuestionnaire={data.afterQuestionnaire} signOut={signOut} />
+  ) : programme.data ? (
     <OnboardingNavigator />
   ) : (
-    <MemberNavigator initialRouteName={memberStartRoute(data.paymentId)} />
+    <Loading resource={programme} signOut={signOut} />
+  );
+}
+
+function Bought({ status, afterQuestionnaire, signOut }: {
+  status: ProgrammeState;
+  afterQuestionnaire: MemberStartRoute | null;
+  signOut: () => Promise<void>;
+}) {
+  const questionnaire = useQuestionnaire();
+  if (!questionnaire.data) return <Loading resource={questionnaire} signOut={signOut} />;
+  return stageFor(status, !!questionnaire.data.submittedAt) === "questionnaire" ? (
+    <QuestionnaireNavigator />
+  ) : (
+    <MemberNavigator initialRouteName={memberStartRoute(afterQuestionnaire)} />
+  );
+}
+
+function Loading({ resource, signOut }: { resource: Resource<unknown>; signOut: () => Promise<void> }) {
+  // Until the status loads there's no state to show, so a failure must still let the user out.
+  return (
+    <View style={{ flex: 1, justifyContent: "center", padding: 24, gap: 8, backgroundColor: colors.cream }}>
+      <ResourceState resource={resource} />
+      {resource.error && <TextButton label="Log out" onPress={() => void signOut()} />}
+    </View>
   );
 }
 

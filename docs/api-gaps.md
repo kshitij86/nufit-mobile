@@ -18,6 +18,7 @@ Checked against `nufit-api` at `4896cbc` (27 Oct 2026).
 | Today, Mood, Profile (programme status) | `GET /users/me/programme` |
 | Today (published diet chart, workout slot, guidance, clinic note) | `GET /users/me/plan/today` |
 | Move, Player (published workout plan) | `GET /users/me/workouts/week`, `GET /users/me/workouts/sessions/{date}` |
+| Questionnaire (post-purchase, photos), Profile, Move (knee banner), Measure | `GET`/`PUT /users/me/questionnaire`, `POST .../submit`, `POST .../photos`, `POST .../photos/{id}/complete` |
 
 `createCustomPlanOrder(customPlanId)` exists in `src/services/payments.ts` with no
 screen yet, because nothing lists a member's custom plans (see
@@ -113,51 +114,10 @@ option labels. A question can have several answers.
 
 ## Intake form
 
-**Screens:** Intake (14 steps), Profile ("Intake answers · 14 of 14"), Move
-(knee-pain banner reads `limits`).
-**App today:** `submitIntake()` in `src/services/intake.ts` resolves without
-sending anything. Answers live in memory and are lost on logout.
-**Stored already:** `users.intake_profile` (food preference, allergies, wake,
-sleep and exercise time, medication, trouble areas, health issues) and
-`users.onboarding.intake_completed_on`. The app collects more than this, so
-some fields need adding.
-
-`PUT /users/me/intake` saves the whole form, partial or complete. The app saves
-on "Save & exit" and on "Finish intake".
-
-```json
-{
-  "age": 34,
-  "height_cm": 162,
-  "weight_kg": 72.4,
-  "lifestyle": "Mostly seated",
-  "diet": "Vegetarian",
-  "allergies": "Peanuts",
-  "meals": [
-    { "time": "08:00", "item": "Poha and tea" },
-    { "time": "13:30", "item": "Dal, rice, sabzi" }
-  ],
-  "medication": "Thyroxine 50 mcg",
-  "family_history": { "Obesity": false, "Thyroid": true, "Diabetes": true, "High blood pressure": false, "Heart disease": false },
-  "cycle": "Regular",
-  "daily_movement": "20 minutes",
-  "limits": ["Knees"],
-  "sleep_time": "23:00",
-  "wake_time": "06:30",
-  "why": "Feel strong for my daughter's wedding",
-  "completed": true
-}
-```
-
-→ `200` with the same object plus `completed_on` (date or null) and
-`answered` / `total` counts for the Profile row.
-
-`GET /users/me/intake` returns the same object, so the form can be resumed and
-the Move screen can read `limits`.
-
-- The exact field list and option values are in `src/data/intake.ts` and
-  `IntakeAnswers` in `src/types/index.ts`.
-- 422 field errors are mapped onto the matching step.
+> **Live** as the questionnaire (see the table above). The steps and their
+> show/hide rules are in `src/data/questionnaire.ts`; the answer shape is
+> `QuestionnaireAnswers` in `src/services/questionnaire.ts`. A member who has
+> bought a programme sees only the questionnaire until they send it.
 
 ## Daily check-in and adherence
 

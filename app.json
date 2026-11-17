@@ -34,7 +34,15 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Choose your front and side photos so Dr. Kanika's team can track your progress.",
+          "cameraPermission": "Take your front and side photos so Dr. Kanika's team can track your progress.",
+          "microphonePermission": false
+        }
+      ]
     ]
   }
 }

@@ -44,6 +44,7 @@ test("loads the signed-in user's name from /users/me", async () => {
     phoneNumber: "+919800000040",
     dateOfBirth: "1992-07-19",
     createdAt: "2026-06-23T10:00:00+05:30",
+    gender: null,
   });
   expect(requestOf(fetchMock, 0)).toMatchObject({
     url: `${API_HOST}/api/v1/users/me`,

@@ -10,7 +10,7 @@ import ResourceState from "../../components/ResourceState";
 import { useWeekSessions } from "../../services/workouts";
 import { TabNav } from "../../navigation/types";
 import { useReloadOnFocus } from "../../navigation/useReloadOnFocus";
-import { useAppState } from "../../state/AppState";
+import { useQuestionnaire } from "../../services/questionnaire";
 
 /** YYYY-MM-DD in the device's time zone, comparable with session ids. */
 function localIsoDate(d: Date): string {
@@ -19,14 +19,13 @@ function localIsoDate(d: Date): string {
 
 export default function Move() {
   const navigation = useNavigation<TabNav>();
-  const { data } = useAppState();
   const sessions = useWeekSessions();
   useReloadOnFocus(sessions.reload);
   const week = sessions.data ?? [];
   const todayIndex = week.findIndex((s) => s.state === "Today");
   // Today's session, else the next one this week. `week` is in date order.
   const featured = todayIndex >= 0 ? week[todayIndex] : week.find((s) => s.id > localIsoDate(new Date()));
-  const hasKneePain = data.intake.limits.includes("Knees");
+  const hasKneePain = useQuestionnaire().data?.answers.limitations.includes("knees") ?? false;
 
   return (
     <ScreenScaffold header={<TopBar title="Move" subtitle="This week's movement" />}>

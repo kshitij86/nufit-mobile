@@ -13,6 +13,7 @@ import { useMeasurements } from "../services/measurements";
 import { useReminders } from "../services/reminders";
 import { orderStatusLabel, OrderStatus, useOrders } from "../services/orders";
 import { initialsOf } from "../services/user";
+import { useQuestionnaire } from "../services/questionnaire";
 import { formatBirthDate, formatCalendarDay, formatDay, formatInr, formatPhone } from "../utils/format";
 
 const statusInk: Record<OrderStatus, string> = {
@@ -89,6 +90,7 @@ export default function Profile() {
   const status = useProgrammeStatus().data;
   const measurements = useMeasurements();
   const reminders = useReminders().data;
+  const questionnaire = useQuestionnaire().data;
   const confirmLogOut = () =>
     Alert.alert("Log out?", "You'll need to log in again to use 360° Fitness on this device.", [
       { text: "Cancel", style: "cancel" },
@@ -97,7 +99,11 @@ export default function Profile() {
 
   const measurementCount = measurements.data?.length;
   const links: { label: string; meta: string; screen: keyof RootStackParamList }[] = [
-    { label: "Intake answers", meta: "14 of 14", screen: "Intake" },
+    {
+      label: "Questionnaire & photos",
+      meta: questionnaire?.submittedAt ? `Sent ${formatDay(questionnaire.submittedAt)}` : "Not sent yet",
+      screen: "Questionnaire",
+    },
     {
       label: "Measurements",
       meta: measurementCount === undefined ? "" : measurementCount === 0 ? "None yet" : `${measurementCount} logged`,
@@ -177,8 +183,8 @@ export default function Profile() {
       </Card>
 
       <View style={{ gap: 4 }}>
-        {/* Intake, measurements, consent and the rest only exist once a programme is bought. */}
-        {status && status.status !== "none" && links.map((link) => (
+        {/* Questionnaire, measurements, consent and the rest open once a programme is bought and the questionnaire sent. */}
+        {status && status.status !== "none" && questionnaire?.submittedAt && links.map((link) => (
           <Pressable
             key={link.label}
             onPress={() => navigation.navigate(link.screen as never)}

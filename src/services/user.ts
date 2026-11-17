@@ -13,6 +13,8 @@ export interface CurrentUser {
   dateOfBirth: string;
   /** ISO timestamp of when the account was created. */
   createdAt: string;
+  /** As given at registration; null when they skipped it. */
+  gender: string | null;
 }
 
 interface UserResponse {
@@ -22,6 +24,7 @@ interface UserResponse {
   phone_number?: unknown;
   date_of_birth?: unknown;
   created_at?: unknown;
+  gender?: unknown;
 }
 
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -41,6 +44,7 @@ export async function fetchCurrentUser(): Promise<CurrentUser> {
     phoneNumber: text(user?.phone_number),
     dateOfBirth: text(user?.date_of_birth),
     createdAt: text(user?.created_at),
+    gender: text(user?.gender) || null,
   };
 }
 

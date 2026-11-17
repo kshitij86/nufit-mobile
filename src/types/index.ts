@@ -126,22 +126,3 @@ export interface CircleMessage {
   time: string;
   text: string;
 }
-
-export interface IntakeAnswers {
-  name: string;
-  age: string;
-  heightCm: string;
-  weightKg: string;
-  life: string;
-  diet: string;
-  allergy: string;
-  meals: { time: string; item: string }[];
-  med: string;
-  family: Record<string, boolean>;
-  cycle: string;
-  dur: string;
-  limits: string[];
-  sleepTime: string;
-  wakeTime: string;
-  why: string;
-}

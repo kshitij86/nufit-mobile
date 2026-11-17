@@ -62,12 +62,16 @@ export function postJson<T>(url: string, body: unknown, options?: PostOptions): 
   return requestJson<T>("POST", url, body, options);
 }
 
+export function putJson<T>(url: string, body: unknown, options?: PostOptions): Promise<T> {
+  return requestJson<T>("PUT", url, body, options);
+}
+
 export function getJson<T>(url: string, options?: PostOptions): Promise<T> {
   return requestJson<T>("GET", url, undefined, options);
 }
 
 async function requestJson<T>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PUT",
   url: string,
   body: unknown,
   { token, fallbackError, timeoutMs = REQUEST_TIMEOUT_MS }: PostOptions = {}

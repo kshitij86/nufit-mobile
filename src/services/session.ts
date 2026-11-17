@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { AUTH_BASE_URL } from "../config";
 import { RegisterRequest } from "../utils/registration";
-import { ApiError, NetworkError, PostOptions, UserFacingError, getJson, postJson } from "./http";
+import { ApiError, NetworkError, PostOptions, UserFacingError, getJson, postJson, putJson } from "./http";
 
 const ACCESS_KEY = "nufit.accessToken";
 const REFRESH_KEY = "nufit.refreshToken";
@@ -137,6 +137,11 @@ type AuthOptions = Omit<PostOptions, "token">;
 // session is cleared, listeners are told, and SessionExpiredError is thrown.
 export function authPost<T>(url: string, body: unknown, options?: AuthOptions): Promise<T> {
   return withAccessToken((token) => postJson<T>(url, body, { ...options, token }));
+}
+
+// PUT with the same refresh-and-retry behaviour as authPost.
+export function authPut<T>(url: string, body: unknown, options?: AuthOptions): Promise<T> {
+  return withAccessToken((token) => putJson<T>(url, body, { ...options, token }));
 }
 
 // GET with the same refresh-and-retry behaviour as authPost.

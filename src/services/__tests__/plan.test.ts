@@ -44,6 +44,7 @@ describe("fetchProgrammeStatus", () => {
     expect(requestOf(fetchMock, 0)).toMatchObject({ url: `${ME}/programme`, method: "GET", authorization: "Bearer access-1" });
     expect(status).toEqual({
       status: "active",
+      programmeId: "reset360",
       programmeName: "Reset 360",
       startDate: "2026-10-12",
       day: 3,

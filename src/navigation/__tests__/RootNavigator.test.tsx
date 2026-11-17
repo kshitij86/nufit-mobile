@@ -8,11 +8,13 @@ import { useAuth } from "../../state/Auth";
 import { useAppState } from "../../state/AppState";
 import { ProgrammeState, useProgrammeStatus } from "../../services/journey";
 import { Resource } from "../../services/resource";
+import { useQuestionnaire } from "../../services/questionnaire";
 
 jest.mock("@expo/vector-icons", () => ({ Ionicons: () => null }));
 jest.mock("../../state/Auth", () => ({ useAuth: jest.fn() }));
 jest.mock("../../state/AppState", () => ({ useAppState: jest.fn() }));
 jest.mock("../../services/journey", () => ({ useProgrammeStatus: jest.fn() }));
+jest.mock("../../services/questionnaire", () => ({ useQuestionnaire: jest.fn() }));
 
 // Screens are stubs: these tests are about which screens each state can reach, not their content.
 jest.mock("../../screens/Login", () => require("../../test/screenStub").screenStub("Login"));
@@ -23,8 +25,7 @@ jest.mock("../../screens/Match", () => require("../../test/screenStub").screenSt
 jest.mock("../../screens/Plans", () => require("../../test/screenStub").screenStub("Plans"));
 jest.mock("../../screens/Consent", () => require("../../test/screenStub").screenStub("Consent"));
 jest.mock("../../screens/Checkout", () => require("../../test/screenStub").screenStub("Checkout"));
-jest.mock("../../screens/Intake", () => require("../../test/screenStub").screenStub("Intake"));
-jest.mock("../../screens/Gender", () => require("../../test/screenStub").screenStub("Gender"));
+jest.mock("../../screens/Questionnaire", () => require("../../test/screenStub").screenStub("Questionnaire"));
 jest.mock("../../screens/Measure", () => require("../../test/screenStub").screenStub("Measure"));
 jest.mock("../../screens/MeasureDone", () => require("../../test/screenStub").screenStub("MeasureDone"));
 jest.mock("../../screens/Mood", () => require("../../test/screenStub").screenStub("Mood"));
@@ -42,8 +43,9 @@ type Route = keyof RootStackParamList;
 
 const LOGGED_OUT: Route[] = ["Login", "Register"];
 const ONBOARDING: Route[] = ["Welcome", "Quiz", "Match", "Plans", "Consent", "Checkout", "Profile"];
+const QUESTIONNAIRE: Route[] = ["Questionnaire", "Profile"];
 const MEMBER: Route[] = [
-  "Intake", "Gender", "Measure", "MeasureDone", "Mood", "MainTabs", "Player", "Recipe",
+  "Questionnaire", "Measure", "MeasureDone", "Mood", "MainTabs", "Player", "Recipe",
   "Sleep", "Circle", "Milestones", "Streak", "Reminders", "Profile",
 ];
 const ALL: Route[] = [...new Set([...LOGGED_OUT, ...ONBOARDING, ...MEMBER])];
@@ -52,7 +54,8 @@ const signOut = jest.fn(async () => {});
 const reload = jest.fn();
 let authStatus: "loading" | "signedOut" | "signedIn";
 let programme: Resource<{ status: ProgrammeState }>;
-let paymentId: string | null;
+let afterQuestionnaire: "Measure" | "MainTabs" | null;
+let questionnaire: Resource<{ submittedAt: string | null }>;
 
 const loaded = (status: ProgrammeState) => ({ data: { status }, error: null, loading: false, reload });
 
@@ -60,10 +63,12 @@ beforeEach(() => {
   jest.clearAllMocks();
   authStatus = "signedIn";
   programme = loaded("none");
-  paymentId = null;
+  afterQuestionnaire = null;
+  questionnaire = { data: { submittedAt: "2026-11-01T10:00:00Z" }, error: null, loading: false, reload };
   jest.mocked(useAuth).mockImplementation(() => ({ status: authStatus, signOut }) as unknown as ReturnType<typeof useAuth>);
   jest.mocked(useProgrammeStatus).mockImplementation(() => programme as unknown as ReturnType<typeof useProgrammeStatus>);
-  jest.mocked(useAppState).mockImplementation(() => ({ data: { paymentId } }) as unknown as ReturnType<typeof useAppState>);
+  jest.mocked(useQuestionnaire).mockImplementation(() => questionnaire as unknown as ReturnType<typeof useQuestionnaire>);
+  jest.mocked(useAppState).mockImplementation(() => ({ data: { afterQuestionnaire } }) as unknown as ReturnType<typeof useAppState>);
 });
 
 const nav = createNavigationContainerRef<RootStackParamList>();
@@ -128,7 +133,8 @@ describe("RootNavigator", () => {
     }
   );
 
-  test("paying moves to the member app on Intake, with no way back to Checkout", async () => {
+  test("paying moves to the questionnaire, which is all a member can reach until it's sent", async () => {
+    questionnaire = { data: { submittedAt: null }, error: null, loading: false, reload };
     await render(app());
     await tryOpen("Quiz");
     await tryOpen("Match");
@@ -136,16 +142,34 @@ describe("RootNavigator", () => {
     await tryOpen("Checkout");
     expect(current()).toBe("Checkout");
 
-    // What Checkout does on a verified payment: records it, then the programme status refreshes.
-    paymentId = "pay_123";
+    // What Checkout does on a verified payment: the programme status refreshes.
     programme = loaded("awaiting_plan");
     await screen.rerender(app());
 
-    expect(current()).toBe("Intake");
+    expect(current()).toBe("Questionnaire");
     // Android's back button only pops when the navigator can go back; at the root it leaves the app.
     expect(nav.canGoBack()).toBe(false);
-    await tryOpen("Checkout");
-    expect(current()).toBe("Intake");
+    expect(await reachable("Questionnaire")).toEqual([...QUESTIONNAIRE].sort());
+  });
+
+  test("sending the questionnaire for a weight goal opens the app on measuring", async () => {
+    programme = loaded("awaiting_plan");
+    questionnaire = { data: { submittedAt: null }, error: null, loading: false, reload };
+    await render(app());
+    expect(current()).toBe("Questionnaire");
+
+    afterQuestionnaire = "Measure";
+    questionnaire = { data: { submittedAt: "2026-11-17T10:00:00Z" }, error: null, loading: false, reload };
+    await screen.rerender(app());
+    expect(current()).toBe("Measure");
+    expect(nav.canGoBack()).toBe(false);
+  });
+
+  test("while the questionnaire loads, a paid member sees no screen", async () => {
+    programme = loaded("active");
+    questionnaire = { data: undefined, error: null, loading: true, reload };
+    await render(app());
+    expect(current()).toBeUndefined();
   });
 
   test("logging out from either signed-in state drops all of its history", async () => {

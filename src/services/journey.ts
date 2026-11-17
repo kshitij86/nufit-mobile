@@ -22,6 +22,8 @@ export type ProgrammeState = "none" | "awaiting_plan" | "scheduled" | "active" |
 
 export interface ProgrammeStatus {
   status: ProgrammeState;
+  /** The bought programme's id, e.g. "reset360". */
+  programmeId: string | null;
   programmeName: string | null;
   /** YYYY-MM-DD. */
   startDate: string | null;
@@ -40,7 +42,7 @@ const LOAD_ERROR = "Couldn't load your programme. Please try again.";
 
 type ProgrammeResponse = {
   status?: unknown;
-  programme?: { name?: unknown } | null;
+  programme?: { id?: unknown; name?: unknown } | null;
   start_date?: unknown;
   day?: unknown;
   total_days?: unknown;
@@ -56,6 +58,7 @@ export async function fetchProgrammeStatus(now = new Date()): Promise<ProgrammeS
   const nextReview = textOrNull(raw.next_review_on);
   return {
     status: raw.status as ProgrammeState,
+    programmeId: textOrNull(raw.programme?.id),
     programmeName: textOrNull(raw.programme?.name),
     startDate: textOrNull(raw.start_date),
     day: typeof raw.day === "number" ? raw.day : 0,

@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
-import { IntakeAnswers, MoodId } from "../types";
+import { MoodId } from "../types";
 
 export type PhotoConsent = "none" | "faceHidden" | "faceShown";
 
@@ -10,38 +10,16 @@ export interface ConsentData {
   signature: string;
 }
 
-const emptyIntake: IntakeAnswers = {
-  name: "",
-  age: "",
-  heightCm: "",
-  weightKg: "",
-  life: "",
-  diet: "",
-  allergy: "",
-  meals: [
-    { time: "", item: "" },
-    { time: "", item: "" },
-    { time: "", item: "" },
-    { time: "", item: "" },
-  ],
-  med: "",
-  family: {},
-  cycle: "",
-  dur: "",
-  limits: [],
-  sleepTime: "",
-  wakeTime: "",
-  why: "",
-};
-
 interface AppData {
   quizAnswers: Record<string, string[]>;
   programmeId: string;
   consent: ConsentData;
   paymentMethod: string;
   paymentId: string | null;
-  intake: IntakeAnswers;
+  /** Sex from the questionnaire, for the measurement guide's body figure. */
   gender: "female" | "male" | null;
+  /** Where the app opens after the questionnaire is sent this session. */
+  afterQuestionnaire: "Measure" | "MainTabs" | null;
   mood: MoodId | null;
   moodTags: string[];
   water: number;
@@ -55,8 +33,8 @@ const initialData: AppData = {
   consent: { name: "", photoConsent: "faceHidden", signature: "" },
   paymentMethod: "UPI · GPay, PhonePe",
   paymentId: null,
-  intake: emptyIntake,
   gender: null,
+  afterQuestionnaire: null,
   mood: null,
   moodTags: [],
   water: 0.5,
@@ -73,7 +51,6 @@ interface AppContextValue {
   data: AppData;
   update: (patch: Partial<AppData>) => void;
   setQuizAnswer: (qid: string, opts: string[]) => void;
-  setIntakeField: <K extends keyof IntakeAnswers>(field: K, value: IntakeAnswers[K]) => void;
   toggleDayTask: (id: string) => void;
   addWater: () => void;
   toggleSleepStep: (id: string) => void;
@@ -97,13 +74,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const setQuizAnswer = useCallback((qid: string, opts: string[]) => {
     setData((prev) => ({ ...prev, quizAnswers: { ...prev.quizAnswers, [qid]: opts } }));
   }, []);
-
-  const setIntakeField = useCallback(
-    <K extends keyof IntakeAnswers>(field: K, value: IntakeAnswers[K]) => {
-      setData((prev) => ({ ...prev, intake: { ...prev.intake, [field]: value } }));
-    },
-    []
-  );
 
   const toggleDayTask = useCallback((id: string) => {
     setData((prev) => ({
@@ -134,7 +104,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       data,
       update,
       setQuizAnswer,
-      setIntakeField,
       toggleDayTask,
       addWater,
       toggleSleepStep,
@@ -146,7 +115,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       data,
       update,
       setQuizAnswer,
-      setIntakeField,
       toggleDayTask,
       addWater,
       toggleSleepStep,

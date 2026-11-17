@@ -11,8 +11,7 @@ export type RootStackParamList = {
   Plans: undefined;
   Consent: undefined;
   Checkout: undefined;
-  Intake: undefined;
-  Gender: undefined;
+  Questionnaire: undefined;
   Measure: undefined;
   MeasureDone: undefined;
   Mood: undefined;
@@ -28,7 +27,7 @@ export type RootStackParamList = {
 };
 
 /** The screens the member navigator can open on. */
-export type MemberStartRoute = Extract<keyof RootStackParamList, "Intake" | "MainTabs">;
+export type MemberStartRoute = Extract<keyof RootStackParamList, "Measure" | "MainTabs">;
 
 export type MainTabParamList = {
   Today: undefined;

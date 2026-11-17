@@ -9,6 +9,7 @@ import { BackButton, Body, Card } from "../components/Primitives";
 import BodySilhouette from "../components/BodySilhouette";
 import { measureSites } from "../data/measureSites";
 import { useAppState } from "../state/AppState";
+import { isWeightManagement, useQuestionnaire } from "../services/questionnaire";
 import { RootNav } from "../navigation/types";
 import { userMessage } from "../services/http";
 import {
@@ -25,6 +26,8 @@ import { decimalInput } from "../utils/numericInput";
 export default function Measure() {
   const navigation = useNavigation<RootNav>();
   const { data } = useAppState();
+  const answers = useQuestionnaire().data?.answers;
+  const sex = answers?.sex ?? data.gender ?? "female";
   const history = useMeasurements();
   const [siteIndex, setSiteIndex] = useState(0);
   const [values, setValues] = useState<Partial<Record<MeasureSiteId, string>>>({});
@@ -125,8 +128,18 @@ export default function Measure() {
         </>
       }
     >
+      {siteIndex === 0 && (
+        <View style={{ flexDirection: "row", gap: 10, backgroundColor: colors.amberTint, borderRadius: 16, padding: 14, marginBottom: 14 }}>
+          <Ionicons name="information-circle-outline" size={20} color={colors.amberInk} />
+          <Body size={13} color={colors.amberInk} style={{ flex: 1 }}>
+            {answers && !isWeightManagement(answers)
+              ? "Measurements are only needed for weight-management programmes, so this is optional for you."
+              : "For weight-management programmes. Measure in inches, on an empty stomach, at the same time of day each time."}
+          </Body>
+        </View>
+      )}
       <Card style={{ backgroundColor: colors.card, alignItems: "center", paddingVertical: 20, marginBottom: 20 }}>
-        <BodySilhouette region={site.region} gender={data.gender ?? "female"} />
+        <BodySilhouette region={site.region} gender={sex} />
       </Card>
 
       <Text style={{ fontFamily: "Nunito_800ExtraBold", color: colors.roseText, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>

@@ -1,17 +1,21 @@
 import { ProgrammeState } from "../services/journey";
 import { MemberStartRoute } from "./types";
 
-/** Which signed-in navigator to show: the purchase funnel, or the app for members who bought. */
-export type SignedInStage = "onboarding" | "member";
+/**
+ * Which signed-in navigator to show: the purchase funnel, the questionnaire (bought, not yet sent),
+ * or the app.
+ */
+export type SignedInStage = "onboarding" | "questionnaire" | "member";
 
-export function stageFor(status: ProgrammeState): SignedInStage {
-  return status === "none" ? "onboarding" : "member";
+export function stageFor(status: ProgrammeState, questionnaireSent: boolean): SignedInStage {
+  if (status === "none") return "onboarding";
+  return questionnaireSent ? "member" : "questionnaire";
 }
 
 /**
- * Where the member navigator opens. Someone who has just paid in this session goes straight on to
- * the intake; a returning member opens on the app.
+ * Where the member navigator opens. Someone who has just sent the questionnaire for a
+ * weight-management goal goes on to their first measurements; everyone else opens on the app.
  */
-export function memberStartRoute(paymentIdThisSession: string | null): MemberStartRoute {
-  return paymentIdThisSession ? "Intake" : "MainTabs";
+export function memberStartRoute(afterQuestionnaire: MemberStartRoute | null): MemberStartRoute {
+  return afterQuestionnaire ?? "MainTabs";
 }

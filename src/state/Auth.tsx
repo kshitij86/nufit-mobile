@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { loadSession, logIn, logOut, onSessionExpired, register } from "../services/session";
+import { loadSession, logIn, logInWithOtp, logOut, onSessionExpired, register } from "../services/session";
 import { CurrentUser, fetchCurrentUser } from "../services/user";
 import { userMessage } from "../services/http";
 import { RegisterRequest } from "../utils/registration";
@@ -14,6 +14,8 @@ interface AuthContextValue {
   userError: string | null;
   reloadUser: () => void;
   signIn: (email: string, password: string) => Promise<void>;
+  /** Logs in with a code texted or read out to `phoneNumber` (E.164). */
+  signInWithOtp: (phoneNumber: string, otp: string) => Promise<void>;
   /** Creates the account; rejects with AccountCreatedError if the follow-up login fails. */
   signUp: (request: RegisterRequest) => Promise<void>;
   signOut: () => Promise<void>;
@@ -67,6 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("signedIn");
   }, []);
 
+  const signInWithOtp = useCallback(async (phoneNumber: string, otp: string) => {
+    await logInWithOtp(phoneNumber, otp);
+    setStatus("signedIn");
+  }, []);
+
   const signUp = useCallback(async (request: RegisterRequest) => {
     await register(request);
     try {
@@ -83,8 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ status, user, userError, reloadUser, signIn, signUp, signOut }),
-    [status, user, userError, reloadUser, signIn, signUp, signOut]
+    () => ({ status, user, userError, reloadUser, signIn, signInWithOtp, signUp, signOut }),
+    [status, user, userError, reloadUser, signIn, signInWithOtp, signUp, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

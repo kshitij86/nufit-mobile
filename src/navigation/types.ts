@@ -3,8 +3,10 @@ import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { CompositeNavigationProp } from "@react-navigation/native";
 
 export type RootStackParamList = {
-  Login: { email?: string } | undefined;
-  Register: undefined;
+  Login: undefined;
+  EmailLogin: { email?: string } | undefined;
+  /** `phone` pre-fills the 10-digit Indian mobile number, without +91. */
+  Register: { phone?: string } | undefined;
   Welcome: undefined;
   Quiz: undefined;
   Match: undefined;

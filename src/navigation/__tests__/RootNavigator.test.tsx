@@ -18,6 +18,7 @@ jest.mock("../../services/questionnaire", () => ({ useQuestionnaire: jest.fn() }
 
 // Screens are stubs: these tests are about which screens each state can reach, not their content.
 jest.mock("../../screens/Login", () => require("../../test/screenStub").screenStub("Login"));
+jest.mock("../../screens/EmailLogin", () => require("../../test/screenStub").screenStub("EmailLogin"));
 jest.mock("../../screens/Register", () => require("../../test/screenStub").screenStub("Register"));
 jest.mock("../../screens/Welcome", () => require("../../test/screenStub").screenStub("Welcome"));
 jest.mock("../../screens/Quiz", () => require("../../test/screenStub").screenStub("Quiz"));
@@ -41,7 +42,7 @@ jest.mock("../../screens/Profile", () => require("../../test/screenStub").screen
 
 type Route = keyof RootStackParamList;
 
-const LOGGED_OUT: Route[] = ["Login", "Register"];
+const LOGGED_OUT: Route[] = ["Login", "EmailLogin", "Register"];
 const ONBOARDING: Route[] = ["Welcome", "Quiz", "Match", "Plans", "Consent", "Checkout", "Profile"];
 const QUESTIONNAIRE: Route[] = ["Questionnaire", "Profile"];
 const MEMBER: Route[] = [
@@ -103,7 +104,7 @@ async function reachable(start: Route): Promise<Route[]> {
 }
 
 describe("RootNavigator", () => {
-  test("logged out: only Login and Register exist", async () => {
+  test("logged out: only Login, EmailLogin and Register exist", async () => {
     authStatus = "signedOut";
     await render(app());
     expect(current()).toBe("Login");

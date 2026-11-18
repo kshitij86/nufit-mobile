@@ -6,10 +6,12 @@ import {
   authPost,
   loadSession,
   logIn,
+  logInWithOtp,
   logOut,
   onSessionExpired,
   register,
   revokeSession,
+  sendLoginOtp,
   SessionExpiredError,
 } from "../session";
 import { FetchMock, jsonResponse, mockFetch, requestOf, tokens } from "../../test/fetchMock";
@@ -190,6 +192,93 @@ test("logOut still signs out locally when revocation fails", async () => {
   expect(await loadSession()).toBe(false);
 });
 
+describe("sendLoginOtp", () => {
+  test("posts the phone number without a token and stores nothing", async () => {
+    await logOut();
+    fetchMock.mockClear();
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, { message: "OTP sent." }));
+    await expect(sendLoginOtp("+919876543210")).resolves.toBeUndefined();
+
+    expect(requestOf(fetchMock, 0)).toEqual({
+      url: `${API_HOST}/api/v1/auth/otp/send`,
+      method: "POST",
+      authorization: undefined,
+      body: { phone_number: "+919876543210" },
+    });
+    expect(await loadSession()).toBe(false);
+  });
+
+  test("surfaces the server's detail message, with the status", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(404, { detail: "No account uses this phone number. Sign up first." })
+    );
+    const error = (await sendLoginOtp("+919876543210").catch((e) => e)) as ApiError;
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(404);
+    expect(error.message).toBe("No account uses this phone number. Sign up first.");
+  });
+
+  test("maps a 422 to the phone_number field", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(422, {
+        detail: [{ type: "value_error", loc: ["body", "phone_number"], msg: "Value error, Invalid phone number." }],
+      })
+    );
+    const error = (await sendLoginOtp("+91123").catch((e) => e)) as ApiError;
+    expect(error.status).toBe(422);
+    expect(error.fieldErrors).toEqual({ phone_number: "Invalid phone number." });
+  });
+});
+
+describe("logInWithOtp", () => {
+  test("posts the number and code and persists both tokens", async () => {
+    await logOut();
+    fetchMock.mockClear();
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, tokens("2")));
+    await logInWithOtp("+919876543210", "565059");
+
+    expect(requestOf(fetchMock, 0)).toEqual({
+      url: `${API_HOST}/api/v1/auth/otp/verify`,
+      method: "POST",
+      authorization: undefined,
+      body: { phone_number: "+919876543210", otp: "565059" },
+    });
+    expect(await SecureStore.getItemAsync("nufit.accessToken")).toBe("access-2");
+    expect(await SecureStore.getItemAsync("nufit.refreshToken")).toBe("refresh-2");
+    expect(await loadSession()).toBe(true);
+  });
+
+  test("the new tokens are used for later requests", async () => {
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(200, tokens("3")))
+      .mockResolvedValueOnce(jsonResponse(200, { ok: true }));
+    await logInWithOtp("+919876543210", "565059");
+    await authPost(URL, {});
+    expect(requestOf(fetchMock, 1).authorization).toBe("Bearer access-3");
+  });
+
+  test.each([
+    [400, "The code is incorrect."],
+    [400, "The code has expired. Request a new one."],
+    [429, "Too many tries for this phone number. Try again later."],
+  ])("surfaces a %i detail message and keeps the stored session as it was", async (status, detail) => {
+    fetchMock.mockResolvedValueOnce(jsonResponse(status, { detail }));
+    const error = (await logInWithOtp("+919876543210", "000000").catch((e) => e)) as ApiError;
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.status).toBe(status);
+    expect(error.message).toBe(detail);
+    expect(await SecureStore.getItemAsync("nufit.accessToken")).toBe("access-1");
+  });
+
+  test("rejects a 200 without tokens instead of saving an empty session", async () => {
+    await logOut();
+    fetchMock.mockClear();
+    fetchMock.mockResolvedValueOnce(jsonResponse(200, { message: "ok" }));
+    await expect(logInWithOtp("+919876543210", "565059")).rejects.toThrow("Something went wrong");
+    expect(await loadSession()).toBe(false);
+  });
+});
+
 describe("register", () => {
   const request = {
     email: "priya@example.com",
@@ -237,5 +326,10 @@ describe("register", () => {
   test("surfaces a string detail, e.g. an email already in use", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(409, { detail: "Email already registered" }));
     await expect(register(request)).rejects.toThrow("Email already registered");
+  });
+
+  test("surfaces a phone number already in use the same way", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse(409, { detail: "An account with this phone number already exists." }));
+    await expect(register(request)).rejects.toThrow("An account with this phone number already exists.");
   });
 });

@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MemberStartRoute, RootStackParamList } from "./types";
 import { memberStartRoute, stageFor } from "./flow";
 import Login from "../screens/Login";
+import EmailLogin from "../screens/EmailLogin";
 import Register from "../screens/Register";
 import Welcome from "../screens/Welcome";
 import Quiz from "../screens/Quiz";
@@ -143,6 +144,7 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name="Login" component={Login} options={{ animationTypeForReplace: "pop" }} />
+      <Stack.Screen name="EmailLogin" component={EmailLogin} />
       <Stack.Screen name="Register" component={Register} />
     </Stack.Navigator>
   );

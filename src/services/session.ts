@@ -69,6 +69,25 @@ export async function logIn(email: string, password: string) {
   await saveSession(pair);
 }
 
+/** Texts (or, until SMS registration is approved, calls with) a login code. `phoneNumber` is E.164. */
+export async function sendLoginOtp(phoneNumber: string) {
+  await postJson(
+    `${AUTH_BASE_URL}/otp/send`,
+    { phone_number: phoneNumber },
+    { fallbackError: "Couldn't send you a code. Please try again." }
+  );
+}
+
+/** Logs in with a code from sendLoginOtp; the tokens are saved exactly as after logIn. */
+export async function logInWithOtp(phoneNumber: string, otp: string) {
+  const pair = await postJson<TokenPair>(
+    `${AUTH_BASE_URL}/otp/verify`,
+    { phone_number: phoneNumber, otp },
+    { fallbackError: "Couldn't log you in. Please try again." }
+  );
+  await saveSession(pair);
+}
+
 export async function register(request: RegisterRequest) {
   await postJson(`${AUTH_BASE_URL}/register`, request, {
     fallbackError: "Couldn't create your account. Please try again.",

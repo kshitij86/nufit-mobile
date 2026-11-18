@@ -83,6 +83,8 @@ export function BackButton({ onPress }: { onPress?: () => void }) {
     <Pressable
       onPress={onPress ?? (() => navigation.goBack())}
       hitSlop={10}
+      accessibilityRole="button"
+      accessibilityLabel="Go back"
       style={{
         width: 40,
         height: 40,

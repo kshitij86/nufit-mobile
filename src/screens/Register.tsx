@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Alert, LayoutChangeEvent, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
@@ -10,7 +10,7 @@ import DateField from "../components/DateField";
 import { BackButton, Body, Eyebrow, Heading } from "../components/Primitives";
 import { AccountCreatedError, useAuth } from "../state/Auth";
 import { ApiError, userMessage } from "../services/http";
-import { RootNav } from "../navigation/types";
+import { RootNav, RootStackParamList } from "../navigation/types";
 import {
   fieldOrder,
   NAME_MAX_LENGTH,
@@ -58,8 +58,10 @@ function serverErrors(e: ApiError): { fields: RegistrationErrors; form: string |
 
 export default function Register() {
   const navigation = useNavigation<RootNav>();
+  const { params } = useRoute<RouteProp<RootStackParamList, "Register">>();
   const { signUp } = useAuth();
-  const [form, setForm] = useState<RegistrationForm>(emptyForm);
+  // Phone login sends members here with the number they tried, when no account uses it.
+  const [form, setForm] = useState<RegistrationForm>(() => ({ ...emptyForm, phone: phoneDigits(params?.phone ?? "") }));
   const [errors, setErrors] = useState<RegistrationErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -118,7 +120,7 @@ export default function Register() {
       setBusy(false);
       if (e instanceof AccountCreatedError) {
         Alert.alert("Account created", "Please log in with your new email and password.");
-        navigation.navigate("Login", { email: form.email.trim() });
+        navigation.navigate("EmailLogin", { email: form.email.trim() });
       } else if (e instanceof ApiError && e.status === 422) {
         const { fields, form: message } = serverErrors(e);
         setErrors(fields);

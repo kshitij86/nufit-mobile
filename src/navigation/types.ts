@@ -11,6 +11,7 @@ export type RootStackParamList = {
   Quiz: undefined;
   Match: undefined;
   Plans: undefined;
+  AlmostThere: undefined;
   Consent: undefined;
   Checkout: undefined;
   Questionnaire: undefined;

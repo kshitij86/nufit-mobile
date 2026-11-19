@@ -11,6 +11,7 @@ import Quiz from "../screens/Quiz";
 import Match from "../screens/Match";
 import Plans from "../screens/Plans";
 import Consent from "../screens/Consent";
+import AlmostThere from "../screens/AlmostThere";
 import Checkout from "../screens/Checkout";
 import Questionnaire from "../screens/Questionnaire";
 import Measure from "../screens/Measure";
@@ -53,7 +54,6 @@ function OnboardingNavigator() {
       <Stack.Screen name="Quiz" component={Quiz} />
       <Stack.Screen name="Match" component={Match} />
       <Stack.Screen name="Plans" component={Plans} />
-      <Stack.Screen name="Consent" component={Consent} />
       <Stack.Screen name="Checkout" component={Checkout} />
       <Stack.Screen name="Profile" component={Profile} />
     </Stack.Navigator>
@@ -61,12 +61,15 @@ function OnboardingNavigator() {
 }
 
 /**
- * Bought a programme but hasn't sent the questionnaire: nothing but the questionnaire, plus Profile
- * to log out. The plan can't be written without it.
+ * Bought a programme but hasn't sent the questionnaire: "almost there", the consent, then the
+ * questionnaire, plus Profile to log out. The plan can't be written without them. Someone who has
+ * already signed (say, they left halfway) goes straight back to the questionnaire.
  */
-function QuestionnaireNavigator() {
+function QuestionnaireNavigator({ consented }: { consented: boolean }) {
   return (
-    <Stack.Navigator initialRouteName="Questionnaire" screenOptions={screenOptions}>
+    <Stack.Navigator initialRouteName={consented ? "Questionnaire" : "AlmostThere"} screenOptions={screenOptions}>
+      <Stack.Screen name="AlmostThere" component={AlmostThere} />
+      <Stack.Screen name="Consent" component={Consent} />
       <Stack.Screen name="Questionnaire" component={Questionnaire} />
       <Stack.Screen name="Profile" component={Profile} />
     </Stack.Navigator>
@@ -78,6 +81,7 @@ function MemberNavigator({ initialRouteName }: { initialRouteName: MemberStartRo
   return (
     <Stack.Navigator initialRouteName={initialRouteName} screenOptions={screenOptions}>
       <Stack.Screen name="Questionnaire" component={Questionnaire} />
+      <Stack.Screen name="Consent" component={Consent} />
       <Stack.Screen name="Measure" component={Measure} />
       <Stack.Screen name="MeasureDone" component={MeasureDone} />
       <Stack.Screen name="Mood" component={Mood} />
@@ -118,7 +122,7 @@ function Bought({ status, afterQuestionnaire, signOut }: {
   const questionnaire = useQuestionnaire();
   if (!questionnaire.data) return <Loading resource={questionnaire} signOut={signOut} />;
   return stageFor(status, !!questionnaire.data.submittedAt) === "questionnaire" ? (
-    <QuestionnaireNavigator />
+    <QuestionnaireNavigator consented={!!questionnaire.data.consent} />
   ) : (
     <MemberNavigator initialRouteName={memberStartRoute(afterQuestionnaire)} />
   );

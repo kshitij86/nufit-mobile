@@ -1,10 +1,12 @@
+import { File, UploadType } from "expo-file-system";
 import { USERS_BASE_URL } from "../config";
 import { ApiError, NetworkError } from "./http";
 import { invalidate, Resource, useResource } from "./resource";
 import { authGet, authPost, authPut } from "./session";
 
 // The detailed "Guide me about you" questionnaire, opened once a programme is bought.
-// API: GET/PUT /users/me/questionnaire, POST .../submit, POST .../photos (+ /{id}/complete).
+// API: GET/PUT /users/me/questionnaire, POST .../consent, POST .../submit,
+// POST .../photos (+ /{id}/complete).
 // The API speaks snake_case; the app keeps camelCase and converts in this file only.
 
 const URL = `${USERS_BASE_URL}/me/questionnaire`;
@@ -204,11 +206,27 @@ export interface Photo {
   uploadedAt: string;
 }
 
+export type PhotoConsent = "none" | "faceHidden" | "faceShown";
+
+/** Bump when the consent wording changes, so the clinic knows which version each member signed. */
+export const CONSENT_TERMS_VERSION = "2026-11";
+
+export interface Consent {
+  /** The account's name when they signed. */
+  name: string;
+  signature: string;
+  photoConsent: PhotoConsent;
+  termsVersion: string;
+  signedAt: string;
+}
+
 export interface QuestionnaireState {
   answers: QuestionnaireAnswers;
   /** ISO timestamp, or null while it's still being filled in. */
   submittedAt: string | null;
   photos: Photo[];
+  /** Signed after paying and before the questionnaire; null until then. */
+  consent: Consent | null;
 }
 
 /* ---------- key conversion ---------- */
@@ -236,7 +254,17 @@ function normalise(raw: unknown): QuestionnaireAnswers {
   return merged;
 }
 
-type StateResponse = { answers?: unknown; submitted_at?: unknown; photos?: unknown } | null;
+type StateResponse = { answers?: unknown; submitted_at?: unknown; photos?: unknown; consent?: unknown } | null;
+
+// Option values are snake_case on the wire too, so these convert values, not just keys.
+const PHOTO_CONSENT_TO_API: Record<PhotoConsent, string> = { none: "none", faceHidden: "face_hidden", faceShown: "face_shown" };
+const PHOTO_CONSENT_FROM_API: Record<string, PhotoConsent> = { none: "none", face_hidden: "faceHidden", face_shown: "faceShown" };
+
+function consentFrom(raw: unknown): Consent | null {
+  if (!raw || typeof raw !== "object") return null;
+  const c = convertKeys(raw, toCamel) as Omit<Consent, "photoConsent"> & { photoConsent: string };
+  return { ...c, photoConsent: PHOTO_CONSENT_FROM_API[c.photoConsent] ?? "none" };
+}
 
 function fromResponse(raw: StateResponse): QuestionnaireState {
   if (!raw) throw new ApiError("Couldn't load your questionnaire. Please try again.", 200);
@@ -245,6 +273,7 @@ function fromResponse(raw: StateResponse): QuestionnaireState {
     answers: normalise(raw.answers),
     submittedAt: typeof raw.submitted_at === "string" ? raw.submitted_at : null,
     photos,
+    consent: consentFrom(raw.consent),
   };
 }
 
@@ -263,6 +292,19 @@ export async function saveQuestionnaire(answers: QuestionnaireAnswers): Promise<
   return fromResponse(
     await authPut<StateResponse>(URL, body(answers), { fallbackError: "Couldn't save your answers." })
   );
+}
+
+/** Signs the consent form. Signing again replaces it. */
+export async function signConsent(signature: string, photoConsent: PhotoConsent): Promise<QuestionnaireState> {
+  const state = fromResponse(
+    await authPost<StateResponse>(
+      `${URL}/consent`,
+      { signature, photo_consent: PHOTO_CONSENT_TO_API[photoConsent], terms_version: CONSENT_TERMS_VERSION },
+      { fallbackError: "Couldn't save your consent. Please try again." }
+    )
+  );
+  invalidate(QUESTIONNAIRE_RESOURCE_KEY);
+  return state;
 }
 
 /** Sends the finished questionnaire to the clinic. */
@@ -286,20 +328,29 @@ const PHOTO_TYPES = ["image/jpeg", "image/png", "image/heic", "image/webp"];
 
 /** Uploads a front or side photo straight to storage, then tells the API it's there. */
 export async function uploadPhoto(view: PhotoView, image: PickedImage): Promise<Photo> {
-  const file = await fetch(image.uri).then((r) => r.blob());
+  // Read natively: fetch() on a picked file:// URI can fail and hand back an error page as the
+  // "image", which then gets uploaded in place of the photo.
+  const file = new File(image.uri);
+  const size = image.fileSize || file.size;
+  if (!size) throw new ApiError("Couldn't read that photo. Please pick it again.", 0);
   const type = image.mimeType && PHOTO_TYPES.includes(image.mimeType) ? image.mimeType : "image/jpeg";
   const ticket = await authPost<{ photo_id: string; upload_url: string; upload_headers: Record<string, string> }>(
     `${URL}/photos`,
-    { view, content_type: type, size_bytes: image.fileSize || file.size || 1 },
+    { view, content_type: type, size_bytes: size },
     { fallbackError: "Couldn't start the upload. Please try again." }
   );
-  let res: Response;
+  let status: number;
   try {
-    res = await fetch(ticket.upload_url, { method: "PUT", headers: ticket.upload_headers, body: file });
+    ({ status } = await file.upload(ticket.upload_url, {
+      httpMethod: "PUT",
+      uploadType: UploadType.BINARY_CONTENT,
+      headers: ticket.upload_headers,
+      mimeType: type,
+    }));
   } catch {
     throw new NetworkError(false);
   }
-  if (!res.ok) throw new ApiError("The photo didn't upload. Please try again.", res.status);
+  if (status < 200 || status >= 300) throw new ApiError("The photo didn't upload. Please try again.", status);
   const photo = await authPost<unknown>(`${URL}/photos/${ticket.photo_id}/complete`, undefined, {
     fallbackError: "The photo didn't upload. Please try again.",
   });

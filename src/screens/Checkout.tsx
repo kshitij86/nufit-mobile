@@ -7,6 +7,7 @@ import PillButton from "../components/PillButton";
 import { Body, Card, Divider, Eyebrow, Heading } from "../components/Primitives";
 import { programmeById } from "../data/programmes";
 import { useAppState } from "../state/AppState";
+import { useAuth } from "../state/Auth";
 import { formatInr } from "../utils/format";
 import { createOrder, verifyPayment, VERIFY_FAILED_MESSAGE } from "../services/payments";
 import { NetworkError, userMessage } from "../services/http";
@@ -28,6 +29,7 @@ const phaseHint: Partial<Record<Phase, string>> = {
 
 export default function Checkout() {
   const { data, update, toast } = useAppState();
+  const { user } = useAuth();
   const programme = programmeById(data.programmeId);
   const gst = programme.price * 0.18;
   const [phase, setPhase] = useState<Phase>("idle");
@@ -55,7 +57,7 @@ export default function Checkout() {
         order,
         description: `${programme.name} · ${programme.weeksLabel}`,
         method: razorpayMethod[data.paymentMethod],
-        prefill: { name: data.consent.name || undefined },
+        prefill: { name: user?.fullName || undefined },
       });
     };
 
@@ -117,7 +119,7 @@ export default function Checkout() {
             </Body>
           )}
           <Body size={12} style={{ textAlign: "center" }}>
-            Fees are non-refundable, as set out in the consent you signed.
+            Fees are non-refundable. After paying, you’ll sign the programme consent.
           </Body>
         </>
       }

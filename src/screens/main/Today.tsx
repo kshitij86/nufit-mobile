@@ -8,6 +8,8 @@ import TopBar from "../../components/TopBar";
 import { Body, Card, CheckBadge, ProgressBar } from "../../components/Primitives";
 import ResourceState from "../../components/ResourceState";
 import { useTodayPlan } from "../../services/diet";
+import { isWeightManagement, useQuestionnaire } from "../../services/questionnaire";
+import PlanInPreparation from "../../components/today/PlanInPreparation";
 import { ProgrammeState, ProgrammeStatus, useProgrammeStatus } from "../../services/journey";
 import { moodById } from "../../data/moods";
 import { useAppState } from "../../state/AppState";
@@ -58,11 +60,20 @@ export default function Today() {
   const items = plan.data?.items ?? [];
   const doneCount = items.filter((i) => data.dayTasksDone[i.id]).length;
   const waterTarget = plan.data?.guidance?.waterLitres || DEFAULT_WATER_LITRES;
-  const empty = plan.data && items.length === 0 ? emptyMessage(plan.data.reason, status) : null;
+  const preparing = status?.status === "awaiting_plan";
+  const questionnaire = useQuestionnaire().data;
+  // The preparing card replaces the smaller "being prepared" message.
+  const empty = plan.data && items.length === 0 && !preparing ? emptyMessage(plan.data.reason, status) : null;
   const subtitle = !status ? "" : status.status === "active" ? `${status.weekday} · Day ${status.day}` : status.weekday;
 
   return (
     <ScreenScaffold header={<TopBar title="Today" subtitle={subtitle} />}>
+      {preparing && (
+        <PlanInPreparation
+          sentAt={questionnaire?.submittedAt ?? null}
+          onMeasure={questionnaire && isWeightManagement(questionnaire.answers) ? () => navigation.navigate("Measure") : undefined}
+        />
+      )}
       <Pressable onPress={() => navigation.navigate("Mood")}>
         <Card bg={mood.bg} style={{ marginTop: 14, marginBottom: 14 }}>
           <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", color: colors.ink, marginBottom: 6 }}>
@@ -76,13 +87,13 @@ export default function Today() {
       </Pressable>
 
       <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
-        <Card style={{ flex: 1 }}>
+        {!preparing && <Card style={{ flex: 1 }}>
           <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 12, color: colors.muted, marginBottom: 8 }}>Day</Text>
           <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 20, color: colors.ink, marginBottom: 10 }}>
             {doneCount} of {items.length} done
           </Text>
           <ProgressBar progress={items.length ? doneCount / items.length : 0} />
-        </Card>
+        </Card>}
         <Card style={{ flex: 1 }}>
           <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 12, color: colors.muted, marginBottom: 8 }}>Water</Text>
           <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 20, color: colors.ink, marginBottom: 10 }}>

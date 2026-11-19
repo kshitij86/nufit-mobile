@@ -31,7 +31,7 @@ export default function Match() {
         <>
           <PillButton
             label={`Continue with ${programme.name}`}
-            onPress={() => navigation.navigate("Consent")}
+            onPress={() => navigation.navigate("Checkout")}
           />
           <TextButton label="See all six programmes" onPress={() => navigation.navigate("Plans")} />
         </>

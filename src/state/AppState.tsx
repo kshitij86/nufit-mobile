@@ -1,19 +1,9 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { MoodId } from "../types";
 
-export type PhotoConsent = "none" | "faceHidden" | "faceShown";
-
-export interface ConsentData {
-  /** The signed-in user's name, filled in from their profile when they sign. */
-  name: string;
-  photoConsent: PhotoConsent;
-  signature: string;
-}
-
 interface AppData {
   quizAnswers: Record<string, string[]>;
   programmeId: string;
-  consent: ConsentData;
   paymentMethod: string;
   paymentId: string | null;
   /** Sex from the questionnaire, for the measurement guide's body figure. */
@@ -30,7 +20,6 @@ interface AppData {
 const initialData: AppData = {
   quizAnswers: {},
   programmeId: "reset360",
-  consent: { name: "", photoConsent: "faceHidden", signature: "" },
   paymentMethod: "UPI · GPay, PhonePe",
   paymentId: null,
   gender: null,

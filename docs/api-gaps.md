@@ -90,14 +90,14 @@ programme on the device (`programmeFromGoals`) and sends nothing.
     "goals": ["Lose weight", "Pain and posture"],
     "stage": ["No specific condition"],
     "time": ["20 minutes"],
-    "blockers": ["Evening hunger", "No time"],
-    "checkin": ["Early morning"]
+    "blockers": ["Evening hunger", "No time"]
   }
 }
 ```
 
 Keys are the app's question ids (`src/data/quiz.ts`), and values are the chosen
-option labels. A question can have several answers.
+option labels. A question can have several answers. Men aren't asked `stage` and
+don't see the PCOS, pregnancy or postpartum goals, so their answers leave those out.
 
 → `200`
 

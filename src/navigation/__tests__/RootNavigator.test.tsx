@@ -25,6 +25,7 @@ jest.mock("../../screens/Quiz", () => require("../../test/screenStub").screenStu
 jest.mock("../../screens/Match", () => require("../../test/screenStub").screenStub("Match"));
 jest.mock("../../screens/Plans", () => require("../../test/screenStub").screenStub("Plans"));
 jest.mock("../../screens/Consent", () => require("../../test/screenStub").screenStub("Consent"));
+jest.mock("../../screens/AlmostThere", () => require("../../test/screenStub").screenStub("AlmostThere"));
 jest.mock("../../screens/Checkout", () => require("../../test/screenStub").screenStub("Checkout"));
 jest.mock("../../screens/Questionnaire", () => require("../../test/screenStub").screenStub("Questionnaire"));
 jest.mock("../../screens/Measure", () => require("../../test/screenStub").screenStub("Measure"));
@@ -43,20 +44,20 @@ jest.mock("../../screens/Profile", () => require("../../test/screenStub").screen
 type Route = keyof RootStackParamList;
 
 const LOGGED_OUT: Route[] = ["Login", "EmailLogin", "Register"];
-const ONBOARDING: Route[] = ["Welcome", "Quiz", "Match", "Plans", "Consent", "Checkout", "Profile"];
-const QUESTIONNAIRE: Route[] = ["Questionnaire", "Profile"];
+const ONBOARDING: Route[] = ["Welcome", "Quiz", "Match", "Plans", "Checkout", "Profile"];
+const QUESTIONNAIRE: Route[] = ["AlmostThere", "Consent", "Questionnaire", "Profile"];
 const MEMBER: Route[] = [
-  "Questionnaire", "Measure", "MeasureDone", "Mood", "MainTabs", "Player", "Recipe",
+  "Questionnaire", "Consent", "Measure", "MeasureDone", "Mood", "MainTabs", "Player", "Recipe",
   "Sleep", "Circle", "Milestones", "Streak", "Reminders", "Profile",
 ];
-const ALL: Route[] = [...new Set([...LOGGED_OUT, ...ONBOARDING, ...MEMBER])];
+const ALL: Route[] = [...new Set([...LOGGED_OUT, ...ONBOARDING, ...QUESTIONNAIRE, ...MEMBER])];
 
 const signOut = jest.fn(async () => {});
 const reload = jest.fn();
 let authStatus: "loading" | "signedOut" | "signedIn";
 let programme: Resource<{ status: ProgrammeState }>;
 let afterQuestionnaire: "Measure" | "MainTabs" | null;
-let questionnaire: Resource<{ submittedAt: string | null }>;
+let questionnaire: Resource<{ submittedAt: string | null; consent?: object | null }>;
 
 const loaded = (status: ProgrammeState) => ({ data: { status }, error: null, loading: false, reload });
 
@@ -134,12 +135,14 @@ describe("RootNavigator", () => {
     }
   );
 
-  test("paying moves to the questionnaire, which is all a member can reach until it's sent", async () => {
-    questionnaire = { data: { submittedAt: null }, error: null, loading: false, reload };
+  test("paying opens 'almost there'; consent and the questionnaire are all a member can reach until it's sent", async () => {
+    questionnaire = { data: { submittedAt: null, consent: null }, error: null, loading: false, reload };
     await render(app());
     await tryOpen("Quiz");
     await tryOpen("Match");
+    // Consent is signed after paying now, so the funnel can't open it.
     await tryOpen("Consent");
+    expect(current()).toBe("Match");
     await tryOpen("Checkout");
     expect(current()).toBe("Checkout");
 
@@ -147,22 +150,35 @@ describe("RootNavigator", () => {
     programme = loaded("awaiting_plan");
     await screen.rerender(app());
 
-    expect(current()).toBe("Questionnaire");
+    expect(current()).toBe("AlmostThere");
     // Android's back button only pops when the navigator can go back; at the root it leaves the app.
     expect(nav.canGoBack()).toBe(false);
-    expect(await reachable("Questionnaire")).toEqual([...QUESTIONNAIRE].sort());
+    expect(await reachable("AlmostThere")).toEqual([...QUESTIONNAIRE].sort());
   });
 
-  test("sending the questionnaire for a weight goal opens the app on measuring", async () => {
+  test("a member who already signed the consent goes straight back to the questionnaire", async () => {
     programme = loaded("awaiting_plan");
-    questionnaire = { data: { submittedAt: null }, error: null, loading: false, reload };
+    questionnaire = {
+      data: { submittedAt: null, consent: { signedAt: "2026-11-17T10:00:00Z" } },
+      error: null,
+      loading: false,
+      reload,
+    };
+    await render(app());
+    expect(current()).toBe("Questionnaire");
+    expect(nav.canGoBack()).toBe(false);
+  });
+
+  test("sending the questionnaire opens the app on Today", async () => {
+    programme = loaded("awaiting_plan");
+    questionnaire = { data: { submittedAt: null, consent: { signedAt: "2026-11-17T10:00:00Z" } }, error: null, loading: false, reload };
     await render(app());
     expect(current()).toBe("Questionnaire");
 
-    afterQuestionnaire = "Measure";
+    afterQuestionnaire = "MainTabs";
     questionnaire = { data: { submittedAt: "2026-11-17T10:00:00Z" }, error: null, loading: false, reload };
     await screen.rerender(app());
-    expect(current()).toBe("Measure");
+    expect(current()).toBe("MainTabs");
     expect(nav.canGoBack()).toBe(false);
   });
 

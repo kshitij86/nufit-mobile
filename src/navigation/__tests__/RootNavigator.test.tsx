@@ -182,6 +182,26 @@ describe("RootNavigator", () => {
     expect(nav.canGoBack()).toBe(false);
   });
 
+  test("sending the questionnaire after signing the consent in this session opens the app on Today", async () => {
+    // The real path: AlmostThere, Consent, then the questionnaire, all in one questionnaire
+    // navigator. Its stack mustn't carry over into the app's, which also has a Questionnaire.
+    programme = loaded("awaiting_plan");
+    questionnaire = { data: { submittedAt: null, consent: null }, error: null, loading: false, reload };
+    await render(app());
+    expect(current()).toBe("AlmostThere");
+    await tryOpen("Consent");
+    questionnaire = { data: { submittedAt: null, consent: { signedAt: "2026-11-17T10:00:00Z" } }, error: null, loading: false, reload };
+    await screen.rerender(app());
+    await act(async () => nav.reset({ index: 0, routes: [{ name: "Questionnaire" }] }));
+    expect(current()).toBe("Questionnaire");
+
+    afterQuestionnaire = "MainTabs";
+    questionnaire = { data: { submittedAt: "2026-11-17T10:00:00Z" }, error: null, loading: false, reload };
+    await screen.rerender(app());
+    expect(current()).toBe("MainTabs");
+    expect(nav.canGoBack()).toBe(false);
+  });
+
   test("while the questionnaire loads, a paid member sees no screen", async () => {
     programme = loaded("active");
     questionnaire = { data: undefined, error: null, loading: true, reload };

@@ -39,6 +39,24 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const screenOptions = { headerShown: false, animation: "slide_from_right" } as const;
 
 /*
+ * Each state's navigator sits in its own route of this outer stack. Swapping the navigator alone
+ * isn't enough: the container keeps the old navigator's stack and hands it to the new one, which
+ * keeps every route it also has. So sending the questionnaire reopened the member app on its own
+ * Questionnaire screen (as an edit) instead of Today. Replacing the outer route drops the old
+ * state's history with it.
+ */
+const Stage = createNativeStackNavigator();
+const stageOptions = { headerShown: false, animation: "none" } as const;
+
+function StageRoot({ name, children }: { name: string; children: () => React.ReactElement }) {
+  return (
+    <Stage.Navigator screenOptions={stageOptions}>
+      <Stage.Screen name={name}>{children}</Stage.Screen>
+    </Stage.Navigator>
+  );
+}
+
+/*
  * The app has three states, each with its own navigator: logged out, onboarding (signed in, no
  * programme bought) and member (bought). A navigator only registers its own state's screens, so
  * nothing in one state, not a navigate() call nor Android's back button, can reach another's.
@@ -108,7 +126,7 @@ function SignedIn() {
   return bought ? (
     <Bought status={programme.data!.status} afterQuestionnaire={data.afterQuestionnaire} signOut={signOut} />
   ) : programme.data ? (
-    <OnboardingNavigator />
+    <StageRoot name="OnboardingStage">{() => <OnboardingNavigator />}</StageRoot>
   ) : (
     <Loading resource={programme} signOut={signOut} />
   );
@@ -121,10 +139,13 @@ function Bought({ status, afterQuestionnaire, signOut }: {
 }) {
   const questionnaire = useQuestionnaire();
   if (!questionnaire.data) return <Loading resource={questionnaire} signOut={signOut} />;
+  const consented = !!questionnaire.data.consent;
   return stageFor(status, !!questionnaire.data.submittedAt) === "questionnaire" ? (
-    <QuestionnaireNavigator consented={!!questionnaire.data.consent} />
+    <StageRoot name="QuestionnaireStage">{() => <QuestionnaireNavigator consented={consented} />}</StageRoot>
   ) : (
-    <MemberNavigator initialRouteName={memberStartRoute(afterQuestionnaire)} />
+    <StageRoot name="MemberStage">
+      {() => <MemberNavigator initialRouteName={memberStartRoute(afterQuestionnaire)} />}
+    </StageRoot>
   );
 }
 
@@ -146,10 +167,14 @@ export default function RootNavigator() {
   if (status === "signedIn") return <SignedIn />;
 
   return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen name="Login" component={Login} options={{ animationTypeForReplace: "pop" }} />
-      <Stack.Screen name="EmailLogin" component={EmailLogin} />
-      <Stack.Screen name="Register" component={Register} />
-    </Stack.Navigator>
+    <StageRoot name="LoggedOutStage">
+      {() => (
+        <Stack.Navigator screenOptions={screenOptions}>
+          <Stack.Screen name="Login" component={Login} options={{ animationTypeForReplace: "pop" }} />
+          <Stack.Screen name="EmailLogin" component={EmailLogin} />
+          <Stack.Screen name="Register" component={Register} />
+        </Stack.Navigator>
+      )}
+    </StageRoot>
   );
 }

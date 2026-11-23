@@ -6,3 +6,4 @@ export const AUTH_BASE_URL = `${API_HOST}/api/v1/auth`;
 export const PAYMENTS_BASE_URL = `${API_HOST}/api/v1/payments`;
 export const USERS_BASE_URL = `${API_HOST}/api/v1/users`;
 export const ORDERS_BASE_URL = `${API_HOST}/api/v1/orders`;
+export const DEVICES_BASE_URL = `${API_HOST}/api/v1/devices`;

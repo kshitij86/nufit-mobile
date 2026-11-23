@@ -1,7 +1,7 @@
 import * as SecureStore from "expo-secure-store";
 import { AUTH_BASE_URL } from "../config";
 import { RegisterRequest } from "../utils/registration";
-import { ApiError, NetworkError, PostOptions, UserFacingError, getJson, postJson, putJson } from "./http";
+import { ApiError, NetworkError, PostOptions, UserFacingError, deleteJson, getJson, postJson, putJson } from "./http";
 
 const ACCESS_KEY = "nufit.accessToken";
 const REFRESH_KEY = "nufit.refreshToken";
@@ -166,6 +166,11 @@ export function authPut<T>(url: string, body: unknown, options?: AuthOptions): P
 // GET with the same refresh-and-retry behaviour as authPost.
 export function authGet<T>(url: string, options?: AuthOptions): Promise<T> {
   return withAccessToken((token) => getJson<T>(url, { ...options, token }));
+}
+
+// DELETE with the same refresh-and-retry behaviour as authPost.
+export function authDelete<T>(url: string, options?: AuthOptions): Promise<T> {
+  return withAccessToken((token) => deleteJson<T>(url, { ...options, token }));
 }
 
 async function withAccessToken<T>(send: (token: string) => Promise<T>): Promise<T> {

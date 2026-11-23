@@ -1,19 +1,18 @@
 import { useEffect } from "react";
 import { useAuth } from "../state/Auth";
-import { useAppState } from "../state/AppState";
-import { startPushNotifications } from "../services/push";
+import { pushSupported } from "../services/pushSupport";
 
 /** Registers the phone for push notifications while someone is signed in. Renders nothing. */
 export default function PushNotifications() {
   const { status } = useAuth();
-  const { toast } = useAppState();
-  const showToast = toast.show;
 
   useEffect(() => {
-    if (status !== "signedIn") return;
+    if (status !== "signedIn" || !pushSupported) return;
     let active = true;
     let stop: (() => void) | null = null;
-    startPushNotifications(({ title, body }) => showToast(title && body ? `${title}: ${body}` : title || body))
+    // Loaded only here: importing Firebase at all crashes Expo Go.
+    import("../services/push")
+      .then(({ startPushNotifications }) => startPushNotifications())
       .then((cleanup) => {
         if (active) stop = cleanup;
         else cleanup();
@@ -23,7 +22,7 @@ export default function PushNotifications() {
       active = false;
       stop?.();
     };
-  }, [status, showToast]);
+  }, [status]);
 
   return null;
 }

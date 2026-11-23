@@ -19,7 +19,11 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -30,7 +34,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFF9F3"
+          "backgroundColor": "#FFF9F3",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
         }
       ],
       "expo-secure-store",
@@ -44,6 +50,11 @@
         }
       ],
       "expo-video"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "46d3a7d0-1edc-49bc-863e-404992a1cb48"
+      }
+    }
   }
 }

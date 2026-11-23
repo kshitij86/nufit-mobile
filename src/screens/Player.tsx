@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, Animated } from "react-native";
+import { View, Text, Pressable, Animated, Image, ScrollView } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Circle } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 import ResourceState from "../components/ResourceState";
-import { useSession } from "../services/workouts";
-import { Session } from "../types";
+import { sessionExercises, useSession } from "../services/workouts";
+import { Session, SessionStep } from "../types";
 import { RootStackParamList, RootNav } from "../navigation/types";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -32,7 +32,73 @@ export default function Player() {
       </SafeAreaView>
     );
   }
-  return <SessionPlayer session={session.data} />;
+  const exercises = sessionExercises(session.data);
+  return exercises.length ? <SessionVideos session={session.data} exercises={exercises} /> : <SessionPlayer session={session.data} />;
+}
+
+/** "Round 1 of 3 · 20 reps" on the first round → "3 rounds · 20 reps": the list shows each exercise once. */
+function listCue(cue: string): string {
+  return cue.replace(/^Round 1 of (\d+) · /, "$1 rounds · ");
+}
+
+/** A workout from the plan: its exercises, each opening its video. */
+function SessionVideos({ session, exercises }: { session: Session; exercises: SessionStep[] }) {
+  const navigation = useNavigation<RootNav>();
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.cream }}>
+      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 20, paddingTop: 8 }}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            accessibilityLabel="Close"
+            style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: colors.blushTint, alignItems: "center", justifyContent: "center" }}
+          >
+            <Ionicons name="close" size={22} color={session.ink} />
+          </Pressable>
+          <Text style={{ fontFamily: "Nunito_800ExtraBold", fontSize: 12, letterSpacing: 1, color: session.ink }}>
+            {session.kind.toUpperCase()} · {session.minutes} MIN
+          </Text>
+        </View>
+        <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 12 }}>
+          <Text style={{ fontFamily: "Outfit_700Bold", fontSize: 26, color: colors.ink }}>{session.name}</Text>
+          <Text style={{ fontFamily: "Nunito_600SemiBold", fontSize: 13, color: colors.secondary, marginBottom: 6 }}>
+            {exercises.length} {exercises.length === 1 ? "exercise" : "exercises"}
+            {session.kit ? ` · ${session.kit}` : ""}
+          </Text>
+          {exercises.map((step) => {
+            const video = step.video;
+            return (
+              <Pressable
+                key={step.exerciseCode}
+                disabled={!video}
+                accessibilityRole="button"
+                accessibilityLabel={video ? `Play ${step.name}` : `${step.name}, video coming soon`}
+                onPress={() => video && navigation.navigate("ExercisePlayer", { name: step.name, cue: step.cue, video })}
+                style={{ flexDirection: "row", alignItems: "center", gap: 14, padding: 10, borderRadius: 18, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.hairline }}
+              >
+                <View style={{ width: 104, height: 64, borderRadius: 12, overflow: "hidden", backgroundColor: colors.blushTint, alignItems: "center", justifyContent: "center" }}>
+                  {video?.thumbnailUrl && (
+                    <Image source={{ uri: video.thumbnailUrl }} resizeMode="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
+                  )}
+                  <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: video ? "rgba(255,255,255,0.9)" : "transparent", alignItems: "center", justifyContent: "center" }}>
+                    <Ionicons name={video ? "play" : "videocam-off-outline"} size={video ? 15 : 20} color={colors.roseText} style={{ marginLeft: video ? 2 : 0 }} />
+                  </View>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text numberOfLines={1} style={{ fontFamily: "Outfit_700Bold", fontSize: 16, color: colors.ink }}>
+                    {step.name}
+                  </Text>
+                  <Text numberOfLines={2} style={{ fontFamily: "Nunito_600SemiBold", fontSize: 12.5, lineHeight: 17, color: colors.secondary, marginTop: 2 }}>
+                    {video ? listCue(step.cue) : "Video coming soon"}
+                  </Text>
+                </View>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </SafeAreaView>
+    </View>
+  );
 }
 
 function SessionPlayer({ session }: { session: Session }) {

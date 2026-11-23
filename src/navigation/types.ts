@@ -1,6 +1,7 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { CompositeNavigationProp } from "@react-navigation/native";
+import { StepVideo } from "../types";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -20,6 +21,8 @@ export type RootStackParamList = {
   Mood: undefined;
   MainTabs: undefined;
   Player: { sessionId: string };
+  /** One exercise's clip, opened from a workout's list. */
+  ExercisePlayer: { name: string; cue: string; video: StepVideo };
   Recipe: { recipeId: string };
   Sleep: undefined;
   Circle: undefined;

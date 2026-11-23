@@ -19,6 +19,7 @@ import MeasureDone from "../screens/MeasureDone";
 import Mood from "../screens/Mood";
 import MainTabs from "./MainTabs";
 import Player from "../screens/Player";
+import ExercisePlayer from "../screens/ExercisePlayer";
 import Recipe from "../screens/Recipe";
 import Sleep from "../screens/Sleep";
 import Circle from "../screens/Circle";
@@ -105,6 +106,7 @@ function MemberNavigator({ initialRouteName }: { initialRouteName: MemberStartRo
       <Stack.Screen name="Mood" component={Mood} />
       <Stack.Screen name="MainTabs" component={MainTabs} />
       <Stack.Screen name="Player" component={Player} options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }} />
+      <Stack.Screen name="ExercisePlayer" component={ExercisePlayer} options={{ presentation: "fullScreenModal", animation: "slide_from_bottom" }} />
       <Stack.Screen name="Recipe" component={Recipe} />
       <Stack.Screen name="Sleep" component={Sleep} />
       <Stack.Screen name="Circle" component={Circle} />

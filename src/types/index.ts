@@ -37,10 +37,32 @@ export interface MeasureSite {
   region: "arm" | "torsoUpper" | "torsoMid" | "torsoLower" | "hip" | "thigh";
 }
 
+/** One language's file: a voiced version of a clip, or WebVTT subtitles. */
+export interface MediaLink {
+  language: string;
+  url: string;
+}
+
+/** An exercise's clip. Links are signed and expire after about an hour. */
+export interface StepVideo {
+  url: string;
+  thumbnailUrl: string | null;
+  durationSec: number;
+  /** The language spoken in `url`. */
+  language: string;
+  /** Every voiced version, `url`'s first. Switching audio swaps the whole file. */
+  audioVersions: MediaLink[];
+  subtitles: MediaLink[];
+}
+
 export interface SessionStep {
   name: string;
   cue: string;
   seconds: number;
+  /** Set on exercise steps (not rest), from the plan. */
+  exerciseCode?: string;
+  /** Only when the exercise has a clip. */
+  video?: StepVideo;
 }
 
 export interface Session {

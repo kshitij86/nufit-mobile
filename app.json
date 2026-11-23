@@ -42,7 +42,8 @@
           "cameraPermission": "Take your front and side photos so Dr. Kanika's team can track your progress.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-video"
     ]
   }
 }

@@ -6,6 +6,7 @@ import { colors } from "../theme/colors";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton, { TextButton } from "../components/PillButton";
 import TextField from "../components/TextField";
+import CountryPicker from "../components/CountryPicker";
 import DateField from "../components/DateField";
 import { BackButton, Body, Eyebrow, Heading } from "../components/Primitives";
 import { AccountCreatedError, useAuth } from "../state/Auth";
@@ -18,8 +19,6 @@ import {
   dateOfBirthToDate,
   formatDateOfBirth,
   genderOptions,
-  PHONE_COUNTRY_CODE,
-  phoneDigits,
   RegistrationErrors,
   RegistrationField,
   RegistrationForm,
@@ -27,6 +26,8 @@ import {
   toRegisterRequest,
   validateRegistration,
 } from "../utils/registration";
+import { countryByIso, DEFAULT_COUNTRY_ISO } from "../data/countries";
+import { nationalDigits, phonePlaceholder } from "../utils/phone";
 
 // The picker opens on a typical adult birth year rather than today.
 const DOB_INITIAL = new Date(1995, 0, 1);
@@ -36,6 +37,7 @@ const emptyForm: RegistrationForm = {
   firstName: "",
   lastName: "",
   email: "",
+  country: DEFAULT_COUNTRY_ISO,
   phone: "",
   dateOfBirth: "",
   gender: null,
@@ -61,7 +63,11 @@ export default function Register() {
   const { params } = useRoute<RouteProp<RootStackParamList, "Register">>();
   const { signUp } = useAuth();
   // Phone login sends members here with the number they tried, when no account uses it.
-  const [form, setForm] = useState<RegistrationForm>(() => ({ ...emptyForm, phone: phoneDigits(params?.phone ?? "") }));
+  const [form, setForm] = useState<RegistrationForm>(() => {
+    const country = countryByIso(params?.country);
+    return { ...emptyForm, country: country.iso, phone: nationalDigits(country.dial, params?.phone ?? "") };
+  });
+  const dialCode = countryByIso(form.country).dial;
   const [errors, setErrors] = useState<RegistrationErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -132,7 +138,7 @@ export default function Register() {
     }
   };
 
-  const field = (name: Exclude<RegistrationField, "gender">) => ({
+  const field = (name: Exclude<RegistrationField, "gender" | "country">) => ({
     value: form[name],
     onChangeText: (text: string) => set(name, text),
     error: errors[name],
@@ -202,27 +208,19 @@ export default function Register() {
             ref={phoneRef}
             label="Phone number"
             {...field("phone")}
-            onChangeText={(text) => set("phone", phoneDigits(text))}
+            onChangeText={(text) => set("phone", nationalDigits(dialCode, text))}
             prefix={
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 6,
-                  paddingLeft: 14,
-                  paddingRight: 12,
-                  alignSelf: "stretch",
-                  borderRightWidth: 1,
-                  borderRightColor: colors.hairline,
+              <CountryPicker
+                value={form.country}
+                disabled={busy}
+                onChange={(country) => {
+                  set("country", country.iso);
+                  // Re-clean the digits for the new country, e.g. India keeps at most 10.
+                  set("phone", nationalDigits(country.dial, form.phone));
                 }}
-              >
-                <Text style={{ fontSize: 18 }}>🇮🇳</Text>
-                <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.ink }}>
-                  {PHONE_COUNTRY_CODE}
-                </Text>
-              </View>
+              />
             }
-            placeholder="98765 43210"
+            placeholder={phonePlaceholder(dialCode)}
             autoComplete="tel-national"
             keyboardType="number-pad"
             textContentType="telephoneNumber"

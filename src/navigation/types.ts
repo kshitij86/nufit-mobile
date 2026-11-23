@@ -5,8 +5,8 @@ import { CompositeNavigationProp } from "@react-navigation/native";
 export type RootStackParamList = {
   Login: undefined;
   EmailLogin: { email?: string } | undefined;
-  /** `phone` pre-fills the 10-digit Indian mobile number, without +91. */
-  Register: { phone?: string } | undefined;
+  /** Pre-fills the mobile number: `country` is its ISO code (India if left out), `phone` the digits without the country code. */
+  Register: { phone?: string; country?: string } | undefined;
   Welcome: undefined;
   Quiz: undefined;
   Match: undefined;

@@ -1,19 +1,25 @@
-// Phone numbers for logging in with a code. Sign-up is India-only (see registration.ts), but members
-// can type another country code here, so the number is kept as country code + national digits.
-import { PHONE_COUNTRY_CODE, PHONE_DIGITS, phoneDigits } from "./registration";
+// Phone numbers for sign-up and logging in with a code. The country comes from CountryPicker, so a
+// number is kept as the country's dial code (digits, no "+") plus the national digits the member typed.
+import { countryByIso, DEFAULT_COUNTRY_ISO } from "../data/countries";
 
-/** India, without the "+". */
-export const DEFAULT_COUNTRY_CODE = PHONE_COUNTRY_CODE.slice(1);
-const COUNTRY_CODE_MAX_DIGITS = 3;
+/** India's dial code, without the "+". */
+export const DEFAULT_COUNTRY_CODE = countryByIso(DEFAULT_COUNTRY_ISO).dial;
+/** An Indian mobile number is 10 digits. */
+export const PHONE_DIGITS = 10;
 // E.164 allows at most 15 digits, country code included.
 const E164_MAX_DIGITS = 15;
 const NATIONAL_MIN_DIGITS = 4;
 
-export function countryCodeDigits(text: string): string {
-  return text.replace(/\D/g, "").slice(0, COUNTRY_CODE_MAX_DIGITS);
+// Keeps only digits, so pasted "98765-43210" or "+91 98765 43210" still works.
+export function phoneDigits(text: string): string {
+  let digits = text.replace(/\D/g, "");
+  // Only strip a prefix when the length says it's there, so typing past 10 digits never shifts the number.
+  if (digits.length === PHONE_DIGITS + 2 && digits.startsWith("91")) digits = digits.slice(2);
+  else if (digits.length === PHONE_DIGITS + 1 && digits.startsWith("0")) digits = digits.slice(1);
+  return digits.slice(0, PHONE_DIGITS);
 }
 
-/** Keeps only digits; for India, also drops a pasted +91 or leading 0 like the sign-up form does. */
+/** Keeps only digits; for India, also drops a pasted +91 or leading 0. */
 export function nationalDigits(countryCode: string, text: string): string {
   if (countryCode === DEFAULT_COUNTRY_CODE) return phoneDigits(text);
   return text.replace(/\D/g, "").slice(0, E164_MAX_DIGITS);
@@ -24,7 +30,6 @@ const withoutTrunkPrefix = (national: string) => national.replace(/^0+/, "");
 
 /** Why the number can't be sent yet, or null if it looks dialable. The server has the final say. */
 export function phoneProblem(countryCode: string, national: string): string | null {
-  if (!countryCode || countryCode.startsWith("0")) return "Enter a valid country code.";
   if (!national) return "Enter your mobile number.";
   if (countryCode === DEFAULT_COUNTRY_CODE) {
     if (national.length !== PHONE_DIGITS) return `Enter all ${PHONE_DIGITS} digits of your mobile number.`;
@@ -50,4 +55,9 @@ export function formatPhone(countryCode: string, national: string): string {
     return `+${countryCode} ${digits.slice(0, 5)} ${digits.slice(5)}`;
   }
   return `+${countryCode} ${digits}`;
+}
+
+/** The placeholder for the number field: an example for India, a plain prompt elsewhere. */
+export function phonePlaceholder(countryCode: string): string {
+  return countryCode === DEFAULT_COUNTRY_CODE ? "98765 43210" : "Mobile number";
 }

@@ -70,8 +70,12 @@ export function getJson<T>(url: string, options?: PostOptions): Promise<T> {
   return requestJson<T>("GET", url, undefined, options);
 }
 
+export function deleteJson<T>(url: string, options?: PostOptions): Promise<T> {
+  return requestJson<T>("DELETE", url, undefined, options);
+}
+
 async function requestJson<T>(
-  method: "GET" | "POST" | "PUT",
+  method: "GET" | "POST" | "PUT" | "DELETE",
   url: string,
   body: unknown,
   { token, fallbackError, timeoutMs = REQUEST_TIMEOUT_MS }: PostOptions = {}

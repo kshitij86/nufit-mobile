@@ -2,13 +2,16 @@ import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { AndroidImportance } from "expo-notifications";
 import {
+  getInitialNotification,
   getMessaging,
   getToken,
   onMessage,
+  onNotificationOpenedApp,
   onTokenRefresh,
   setBackgroundMessageHandler,
 } from "@react-native-firebase/messaging";
 import { DevicePlatform, registerDevice } from "./devices";
+import { handlePushOpened, handlePushReceived } from "./planPush";
 
 // Firebase Cloud Messaging receives pushes and supplies the token we register with our API
 // (services/devices). expo-notifications only shows notifications and owns the Android channel:
@@ -66,6 +69,7 @@ export async function startPushNotifications(): Promise<() => void> {
 
   const stopRefresh = onTokenRefresh(messaging, register);
   const stopMessages = onMessage(messaging, (message) => {
+    handlePushReceived(message.data);
     const { title, body } = message.notification ?? {};
     if (!title && !body) return;
     Notifications.scheduleNotificationAsync({
@@ -73,6 +77,7 @@ export async function startPushNotifications(): Promise<() => void> {
       trigger: Platform.OS === "android" ? { channelId: PUSH_CHANNEL_ID } : null,
     }).catch((e) => console.warn("Couldn't show the notification", e));
   });
+  const stopTaps = listenForTaps(messaging);
   try {
     await register(await getToken(messaging));
   } catch (e) {
@@ -81,6 +86,45 @@ export async function startPushNotifications(): Promise<() => void> {
   return () => {
     stopRefresh();
     stopMessages();
+    stopTaps();
+  };
+}
+
+// Each tap is handled once, even if a source reports it again later (e.g. on the next sign-in).
+const handledTaps = new Set<string>();
+
+function opened(id: string | undefined, data: unknown) {
+  if (id) {
+    if (handledTaps.has(id)) return;
+    handledTaps.add(id);
+  }
+  handlePushOpened(data);
+}
+
+/**
+ * Taps arrive from three places: a notification we posted while the app was open
+ * (expo-notifications), and a push the OS showed while the app was in the background
+ * (onNotificationOpenedApp) or closed (getInitialNotification).
+ */
+function listenForTaps(messaging: ReturnType<typeof getMessaging>): () => void {
+  const posted = Notifications.addNotificationResponseReceivedListener((response) =>
+    opened(response.notification.request.identifier, response.notification.request.content.data)
+  );
+  // A notification we posted, tapped after the app was closed, starts the app with it.
+  const lastPosted = Notifications.getLastNotificationResponse();
+  if (lastPosted) {
+    opened(lastPosted.notification.request.identifier, lastPosted.notification.request.content.data);
+    Notifications.clearLastNotificationResponseAsync().catch(() => {});
+  }
+
+  const stopBackground = onNotificationOpenedApp(messaging, (message) => opened(message.messageId, message.data));
+  getInitialNotification(messaging)
+    .then((message) => message && opened(message.messageId, message.data))
+    .catch(() => {});
+
+  return () => {
+    posted.remove();
+    stopBackground();
   };
 }
 

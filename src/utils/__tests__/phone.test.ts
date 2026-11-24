@@ -1,4 +1,4 @@
-import { countryCodeDigits, formatPhone, nationalDigits, phoneProblem, toE164 } from "../phone";
+import { formatPhone, nationalDigits, phonePlaceholder, phoneProblem, toE164 } from "../phone";
 
 test("an Indian mobile number becomes E.164 and reads with a space in the middle", () => {
   const national = nationalDigits("91", "98765 43210");
@@ -27,11 +27,9 @@ test("another country code is kept, and a domestic leading 0 is dropped", () => 
   expect(formatPhone("44", national)).toBe("+44 7700900123");
 });
 
-test("the country code is digits only, at most 3, and can't be empty or start with 0", () => {
-  expect(countryCodeDigits("+1-")).toBe("1");
-  expect(countryCodeDigits("12345")).toBe("123");
-  expect(phoneProblem("", "9876543210")).toBe("Enter a valid country code.");
-  expect(phoneProblem("0", "9876543210")).toBe("Enter a valid country code.");
+test("only India gets an example number as the placeholder", () => {
+  expect(phonePlaceholder("91")).toBe("98765 43210");
+  expect(phonePlaceholder("44")).toBe("Mobile number");
 });
 
 test("numbers outside India must fit E.164's 15 digits", () => {

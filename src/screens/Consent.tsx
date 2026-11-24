@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
@@ -6,8 +6,11 @@ import ScreenScaffold from "../components/ScreenScaffold";
 import { AccountHeader } from "../components/AccountButton";
 import PillButton from "../components/PillButton";
 import { Body, Card, Eyebrow, Heading } from "../components/Primitives";
-import { PhotoConsent, useAppState } from "../state/AppState";
+import ResourceState from "../components/ResourceState";
+import { useAppState } from "../state/AppState";
 import { useAuth } from "../state/Auth";
+import { Consent as SignedConsent, PhotoConsent, signConsent, useQuestionnaire } from "../services/questionnaire";
+import { userMessage } from "../services/http";
 import { RootNav } from "../navigation/types";
 import { NAME_MAX_LENGTH } from "../utils/registration";
 
@@ -85,34 +88,66 @@ function NameLine() {
   return <Body color={colors.muted}>Loading your details…</Body>;
 }
 
+/**
+ * Signed after paying, before the questionnaire. Members who've already sent the questionnaire
+ * open it from Profile to see or change what they signed.
+ */
 export default function Consent() {
+  const questionnaire = useQuestionnaire();
+  if (!questionnaire.data) {
+    return (
+      <ScreenScaffold header={<AccountHeader />}>
+        <ResourceState resource={questionnaire} minHeight={300} />
+      </ScreenScaffold>
+    );
+  }
+  return <ConsentForm signed={questionnaire.data.consent} questionnaireSent={!!questionnaire.data.submittedAt} />;
+}
+
+const formatDay = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+
+function ConsentForm({ signed, questionnaireSent }: { signed: SignedConsent | null; questionnaireSent: boolean }) {
   const navigation = useNavigation<RootNav>();
-  const { data, update } = useAppState();
+  const { toast } = useAppState();
   const { user } = useAuth();
-  const consent = data.consent;
+  const [signature, setSignature] = useState(signed?.signature ?? "");
+  const [photoConsent, setPhotoConsent] = useState<PhotoConsent>(signed?.photoConsent ?? "faceHidden");
+  const [busy, setBusy] = useState(false);
 
-  const setConsent = (patch: Partial<typeof consent>) => update({ consent: { ...consent, ...patch } });
-
-  const sign = () => {
-    if (!user) return;
-    setConsent({ name: user.fullName, signature: consent.signature.trim() });
-    navigation.navigate("Checkout");
+  const sign = async () => {
+    if (!user || busy) return;
+    setBusy(true);
+    try {
+      await signConsent(signature.trim(), photoConsent);
+    } catch (e) {
+      toast.show(userMessage(e));
+      setBusy(false);
+      return;
+    }
+    if (questionnaireSent) {
+      toast.show("Your consent is updated");
+      navigation.goBack();
+    } else {
+      // Straight on to the questionnaire, with nothing behind it: the consent is done.
+      navigation.reset({ index: 0, routes: [{ name: "Questionnaire" }] });
+    }
   };
 
-  const today = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+  const signedOn = signed ? formatDay(new Date(signed.signedAt)) : formatDay(new Date());
 
   return (
     <ScreenScaffold
       header={<AccountHeader />}
       footer={
         <PillButton
-          label="Sign & continue"
-          disabled={!user || consent.signature.trim().length === 0}
-          onPress={sign}
+          label={questionnaireSent ? "Save" : signed ? "Continue" : "Sign & continue"}
+          disabled={!user || signature.trim().length === 0}
+          loading={busy}
+          onPress={() => void sign()}
         />
       }
     >
-      <Eyebrow>Required before any programme</Eyebrow>
+      <Eyebrow>Before we design your programme</Eyebrow>
       <Heading size={24}>Consent & non-disclosure</Heading>
       <Body style={{ marginTop: 6, marginBottom: 18 }}>Dr. Kanika’s 360° Fitness</Body>
 
@@ -130,17 +165,17 @@ export default function Consent() {
         <Body color={colors.ink}>Can we use your progress photos for clinic display and publicity?</Body>
         <RadioList
           options={photoOptions}
-          value={consent.photoConsent}
-          onChange={(photoConsent) => setConsent({ photoConsent })}
+          value={photoConsent}
+          onChange={setPhotoConsent}
         />
       </Card>
 
       <Card style={{ gap: 4 }}>
         <Body color={colors.ink}>Type your full name to sign</Body>
         <TextInput
-          value={consent.signature}
+          value={signature}
           // Return finishes signing rather than inserting a line break.
-          onChangeText={(t) => setConsent({ signature: t.replace(/[\r\n]+/g, " ") })}
+          onChangeText={(t) => setSignature(t.replace(/[\r\n]+/g, " "))}
           placeholder="Your full name"
           maxLength={NAME_MAX_LENGTH * 2 + 1}
           autoCapitalize="words"
@@ -160,7 +195,7 @@ export default function Consent() {
           }}
         />
         <Text style={{ fontFamily: "Nunito_600SemiBold", color: colors.muted, fontSize: 12, marginTop: 10 }}>
-          Signed {today} · timestamp recorded
+          {signed ? `Signed ${signedOn}` : `Signing ${signedOn}`} · timestamp recorded
         </Text>
       </Card>
     </ScreenScaffold>

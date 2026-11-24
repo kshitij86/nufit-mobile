@@ -13,14 +13,25 @@ export interface Resource<T> {
   reload: () => void;
 }
 
-const listeners = new Map<string, Set<() => void>>();
+/** Called with nothing to load again, or with `{ data }` to take that value as loaded. */
+type Listener = (fresh?: { data: unknown }) => void;
+const listeners = new Map<string, Set<Listener>>();
 
 /** Tells every mounted useResource with this key to load again, e.g. after a save. */
 export function invalidate(key: string) {
   listeners.get(key)?.forEach((listener) => listener());
 }
 
-function subscribe(key: string, listener: () => void) {
+/**
+ * Hands every mounted useResource with this key a value the server just returned (say, from a
+ * save), so they all agree on it at once. Re-fetching instead lets each screen load separately,
+ * and one that fails or lags keeps the old value while the others move on.
+ */
+export function publish<T>(key: string, data: T) {
+  listeners.get(key)?.forEach((listener) => listener({ data }));
+}
+
+function subscribe(key: string, listener: Listener) {
   let set = listeners.get(key);
   if (!set) listeners.set(key, (set = new Set()));
   set.add(listener);
@@ -39,7 +50,11 @@ export function useResource<T>(key: string, load: () => Promise<T>): Resource<T>
   const [settled, setSettled] = useState<{ request: string; data?: T; error: string | null } | null>(null);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
-  useEffect(() => subscribe(key, reload), [key, reload]);
+  useEffect(
+    () =>
+      subscribe(key, (fresh) => (fresh ? setSettled({ request, data: fresh.data as T, error: null }) : reload())),
+    [key, request, reload]
+  );
 
   useEffect(() => {
     let active = true;

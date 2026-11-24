@@ -1,4 +1,6 @@
 // Mirrors the backend's UserCreate rules so most mistakes are caught before a round trip.
+import { countryByIso } from "../data/countries";
+import { nationalDigits, phoneProblem, toE164 } from "./phone";
 
 export type Gender = "female" | "male" | "non_binary" | "other" | "prefer_not_to_say";
 
@@ -14,7 +16,8 @@ export interface RegistrationForm {
   firstName: string;
   lastName: string;
   email: string;
-  phone: string; // 10-digit Indian mobile number, without +91
+  country: string; // ISO code of the phone number's country, e.g. "IN"
+  phone: string; // national digits, without the country code
   dateOfBirth: string; // DD/MM/YYYY, set from the date picker
   gender: Gender | null;
   password: string;
@@ -61,19 +64,6 @@ export const serverFieldMap: Record<keyof RegisterRequest, RegistrationField> = 
 
 export const NAME_MAX_LENGTH = 50;
 export const PASSWORD_MAX_LENGTH = 50;
-// Sign-up is India-only for now: the country code is fixed and the number is a 10-digit mobile.
-export const PHONE_COUNTRY_CODE = "+91";
-export const PHONE_DIGITS = 10;
-
-// Keeps only digits, so pasted "98765-43210" or "+91 98765 43210" still works.
-export function phoneDigits(text: string): string {
-  let digits = text.replace(/\D/g, "");
-  // Only strip a prefix when the length says it's there, so typing past 10 digits never shifts the number.
-  if (digits.length === PHONE_DIGITS + 2 && digits.startsWith("91")) digits = digits.slice(2);
-  else if (digits.length === PHONE_DIGITS + 1 && digits.startsWith("0")) digits = digits.slice(1);
-  return digits.slice(0, PHONE_DIGITS);
-}
-
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
 /** A picked date → DD/MM/YYYY, using the device's local calendar day. */
@@ -116,10 +106,9 @@ export function validateRegistration(form: RegistrationForm, today = new Date())
   if (!form.lastName.trim()) errors.lastName = "Enter your last name.";
   else if (form.lastName.trim().length > NAME_MAX_LENGTH) errors.lastName = `Use ${NAME_MAX_LENGTH} characters or fewer.`;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "Enter a valid email address.";
-  const phone = phoneDigits(form.phone);
-  if (!phone) errors.phone = "Enter your mobile number.";
-  else if (phone.length !== PHONE_DIGITS) errors.phone = `Enter all ${PHONE_DIGITS} digits of your mobile number.`;
-  else if (!/^[6-9]/.test(phone)) errors.phone = "Enter a valid Indian mobile number.";
+  const dial = countryByIso(form.country).dial;
+  const phone = phoneProblem(dial, nationalDigits(dial, form.phone));
+  if (phone) errors.phone = phone;
   const dob = parseDateOfBirth(form.dateOfBirth);
   if (!dob) errors.dateOfBirth = "Select your date of birth.";
   else if (dob > today.toISOString().slice(0, 10)) errors.dateOfBirth = "Date of birth can't be in the future.";
@@ -130,12 +119,17 @@ export function validateRegistration(form: RegistrationForm, today = new Date())
   return errors;
 }
 
+function phoneNumber(form: RegistrationForm): string {
+  const dial = countryByIso(form.country).dial;
+  return toE164(dial, nationalDigits(dial, form.phone));
+}
+
 export function toRegisterRequest(form: RegistrationForm): RegisterRequest {
   return {
     email: form.email.trim(),
     first_name: form.firstName.trim(),
     last_name: form.lastName.trim(),
-    phone_number: PHONE_COUNTRY_CODE + phoneDigits(form.phone),
+    phone_number: phoneNumber(form),
     date_of_birth: parseDateOfBirth(form.dateOfBirth) ?? form.dateOfBirth,
     gender: form.gender,
     password: form.password,

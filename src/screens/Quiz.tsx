@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../theme/colors";
@@ -6,10 +6,11 @@ import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton from "../components/PillButton";
 import AccountButton from "../components/AccountButton";
 import { BackButton, Body, Heading, ProgressBar } from "../components/Primitives";
-import { quizQuestions } from "../data/quiz";
+import { quizQuestionsFor, visibleAnswers } from "../data/quiz";
 import { userMessage } from "../services/http";
 import { submitQuizAnswers } from "../services/quiz";
 import { useAppState } from "../state/AppState";
+import { useAuth } from "../state/Auth";
 import { RootNav } from "../navigation/types";
 
 export default function Quiz() {
@@ -17,8 +18,13 @@ export default function Quiz() {
   const { data, setQuizAnswer, update, toast } = useAppState();
   const [index, setIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const { user } = useAuth();
+  // Registration's gender, else the one the questionnaire recorded.
+  const quizQuestions = useMemo(() => quizQuestionsFor(user?.gender ?? data.gender), [user?.gender, data.gender]);
 
-  const question = quizQuestions[index];
+  // The profile can load mid-quiz and drop a question, so keep the index in range.
+  const position = Math.min(index, quizQuestions.length - 1);
+  const question = quizQuestions[position];
   const selected = data.quizAnswers[question.id] ?? [];
 
   const toggleOption = (opt: string) => {
@@ -30,18 +36,18 @@ export default function Quiz() {
     }
   };
 
-  const isLast = index === quizQuestions.length - 1;
+  const isLast = position === quizQuestions.length - 1;
   const canContinue = selected.length > 0;
 
   const onContinue = async () => {
     if (!isLast) {
-      setIndex(index + 1);
+      setIndex(position + 1);
       return;
     }
     setSubmitting(true);
     let match;
     try {
-      match = await submitQuizAnswers(data.quizAnswers);
+      match = await submitQuizAnswers(visibleAnswers(quizQuestions, data.quizAnswers));
     } catch (e) {
       toast.show(userMessage(e));
       return;
@@ -53,8 +59,8 @@ export default function Quiz() {
   };
 
   const onBack = () => {
-    if (index === 0) navigation.goBack();
-    else setIndex(index - 1);
+    if (position === 0) navigation.goBack();
+    else setIndex(position - 1);
   };
 
   return (
@@ -65,12 +71,12 @@ export default function Quiz() {
             <BackButton onPress={onBack} />
             <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
               <Text style={{ fontFamily: "Nunito_700Bold", color: colors.muted, fontSize: 13 }}>
-                {index + 1}/{quizQuestions.length}
+                {position + 1}/{quizQuestions.length}
               </Text>
               <AccountButton />
             </View>
           </View>
-          <ProgressBar progress={(index + 1) / quizQuestions.length} />
+          <ProgressBar progress={(position + 1) / quizQuestions.length} />
         </View>
       }
       footer={

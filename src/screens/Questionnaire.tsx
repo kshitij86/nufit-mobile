@@ -108,15 +108,31 @@ function Form({ initial }: { initial: QuestionnaireState }) {
     if (autoAdvance.current) clearTimeout(autoAdvance.current);
   }, []);
 
+  // Re-read after every upload, so going back to the photo step shows what was saved.
+  const photos = initial.photos;
   const missing = (step.required ?? []).filter((f) => isBlank(getPath(answers, f)));
-  const answeredHere = fields.some((f) => f.type === "photos" ? initial.photos.length > 0 : !isBlank(getPath(answers, f.field)));
+  // Composite fields store their answers under other keys than their own `field`.
+  const answeredHere = fields.some((f) =>
+    f.type === "photos"
+      ? photos.length > 0
+      : f.type === "heightWeight"
+        ? answers.heightCm != null || answers.weightKg != null
+        : f.type !== "notice" && !isBlank(getPath(answers, f.field))
+  );
 
+  // The last step save still in flight. Sending waits for it: a save that lands after the send
+  // writes the member back over it, un-sending the questionnaire.
+  const pendingSave = useRef<Promise<unknown> | null>(null);
   const save = (a: QuestionnaireAnswers) => {
     setSaving("saving");
-    saveQuestionnaire(a).then(
+    const request = saveQuestionnaire(a).then(
       () => setSaving("saved"),
       () => setSaving("failed")
     );
+    pendingSave.current = request;
+    void request.finally(() => {
+      if (pendingSave.current === request) pendingSave.current = null;
+    });
   };
 
   const goTo = (i: number) => setStepKey(list[Math.min(Math.max(i, 0), list.length - 1)].key);
@@ -133,6 +149,7 @@ function Form({ initial }: { initial: QuestionnaireState }) {
     }
     setSubmitting(true);
     try {
+      if (pendingSave.current) await pendingSave.current;
       await submitQuestionnaire(a);
     } catch (e) {
       toast.show(userMessage(e));
@@ -141,13 +158,16 @@ function Form({ initial }: { initial: QuestionnaireState }) {
     }
     if (a.sex) update({ gender: a.sex });
     toast.show(editing ? "Your answers are updated" : "Sent to Dr. Kanika. Thank you!");
-    if (editing) {
+    if (editing && navigation.canGoBack()) {
+      // Opened from Profile: back to it.
       setSubmitting(false);
-      if (navigation.canGoBack()) navigation.goBack();
+      navigation.goBack();
     } else {
-      // Submitting swaps the questionnaire navigator for the app, which opens on measuring
-      // for weight-management goals.
-      update({ afterQuestionnaire: isWeightManagement(a) ? "Measure" : "MainTabs" });
+      // Sending swaps the questionnaire navigator for the app, which opens on Today: it says the
+      // plan is being prepared (and, for weight goals, offers the first measurements). This is
+      // also the way out when there's nothing to go back to, which is the questionnaire navigator
+      // even if this screen already saw the questionnaire as sent.
+      update({ afterQuestionnaire: "MainTabs" });
     }
   };
 
@@ -231,7 +251,7 @@ function Form({ initial }: { initial: QuestionnaireState }) {
       <Heading size={23}>{step.heading(ctx)}</Heading>
       {step.help ? <Body style={{ marginTop: 8, marginBottom: 20 }}>{step.help}</Body> : <View style={{ height: 20 }} />}
       {fields.map((f, i) => (
-        <FieldView key={`${step.key}-${f.field}-${i}`} field={f} ctx={ctx} set={set} photos={initial.photos} />
+        <FieldView key={`${step.key}-${f.field}-${i}`} field={f} ctx={ctx} set={set} photos={photos} />
       ))}
       {isLast && !editing && <Recap steps={list} ctx={ctx} />}
     </ScreenScaffold>

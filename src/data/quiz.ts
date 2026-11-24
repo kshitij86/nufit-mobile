@@ -49,14 +49,32 @@ export const quizQuestions: QuizQuestion[] = [
       "Losing motivation",
     ],
   },
-  {
-    id: "checkin",
-    q: "When should the app check in?",
-    help: "One check-in a day. You can change it later.",
-    multi: false,
-    opts: ["Early morning", "Mid-morning", "Evening", "Before bed"],
-  },
 ];
+
+// Can't apply to a man: hidden when registration says the user is male.
+const FEMALE_ONLY_QUESTIONS = new Set(["stage"]);
+const FEMALE_ONLY_OPTIONS = new Set(["PCOS or hormones", "Pregnancy", "Postpartum recovery"]);
+
+/** The questions to ask. Only "male" hides anything; any other or unknown gender sees them all. */
+export function quizQuestionsFor(gender: string | null | undefined): QuizQuestion[] {
+  if (gender !== "male") return quizQuestions;
+  return quizQuestions
+    .filter((question) => !FEMALE_ONLY_QUESTIONS.has(question.id))
+    .map((question) => ({ ...question, opts: question.opts.filter((opt) => !FEMALE_ONLY_OPTIONS.has(opt)) }));
+}
+
+/** Keeps only answers to `questions` that are still among their options, so nothing hidden is sent. */
+export function visibleAnswers(
+  questions: QuizQuestion[],
+  answers: Record<string, string[]>
+): Record<string, string[]> {
+  const visible: Record<string, string[]> = {};
+  for (const question of questions) {
+    const picked = (answers[question.id] ?? []).filter((opt) => question.opts.includes(opt));
+    if (picked.length) visible[question.id] = picked;
+  }
+  return visible;
+}
 
 const goalToProgramme: Record<string, string> = {
   "PCOS or hormones": "pcos",

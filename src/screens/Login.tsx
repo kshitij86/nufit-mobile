@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { BackHandler, Text, TextInput, View } from "react-native";
+import { BackHandler, TextInput, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../theme/colors";
@@ -7,19 +7,14 @@ import { HorizontalLogo } from "../components/brand/BrandLockup";
 import ScreenScaffold from "../components/ScreenScaffold";
 import PillButton, { TextButton } from "../components/PillButton";
 import TextField from "../components/TextField";
+import CountryPicker from "../components/CountryPicker";
 import { BackButton, Body, Eyebrow, Heading } from "../components/Primitives";
 import { useAuth } from "../state/Auth";
 import { sendLoginOtp } from "../services/session";
 import { ApiError, userMessage } from "../services/http";
 import { RootNav } from "../navigation/types";
-import {
-  countryCodeDigits,
-  DEFAULT_COUNTRY_CODE,
-  formatPhone,
-  nationalDigits,
-  phoneProblem,
-  toE164,
-} from "../utils/phone";
+import { formatPhone, nationalDigits, phonePlaceholder, phoneProblem, toE164 } from "../utils/phone";
+import { countryByIso, DEFAULT_COUNTRY_ISO } from "../data/countries";
 
 const RESEND_SECONDS = 60;
 // The backend accepts 4–8 digit codes.
@@ -66,7 +61,8 @@ export default function Login() {
   const navigation = useNavigation<RootNav>();
   const { signInWithOtp } = useAuth();
   const [step, setStep] = useState<"phone" | "code">("phone");
-  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
+  const [country, setCountry] = useState(DEFAULT_COUNTRY_ISO);
+  const countryCode = countryByIso(country).dial;
   const [national, setNational] = useState("");
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [notRegistered, setNotRegistered] = useState(false);
@@ -252,14 +248,13 @@ export default function Login() {
       footer={
         <>
           <PillButton label="Send code" loading={busy === "sending"} onPress={sendCode} />
-          <PillButton label="Log in with email code · coming soon" variant="outline" disabled />
           <PillButton
             label="Log in with email and password"
             variant="outline"
             disabled={busy !== null}
             onPress={() => navigation.navigate("EmailLogin")}
           />
-          <TextButton label="New to 360° Fitness? Create an account" onPress={() => navigation.navigate("Register")} />
+          <TextButton label="Create account" onPress={() => navigation.navigate("Register")} />
         </>
       }
     >
@@ -283,42 +278,18 @@ export default function Login() {
         }}
         error={phoneError ?? undefined}
         prefix={
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingLeft: 14,
-              paddingRight: 6,
-              alignSelf: "stretch",
-              borderRightWidth: 1,
-              borderRightColor: colors.hairline,
+          <CountryPicker
+            value={country}
+            disabled={busy !== null}
+            onChange={(picked) => {
+              setCountry(picked.iso);
+              setNational((prev) => nationalDigits(picked.dial, prev));
+              setPhoneError(null);
+              setNotRegistered(false);
             }}
-          >
-            <Text style={{ fontFamily: "Nunito_700Bold", fontSize: 15, color: colors.ink }}>+</Text>
-            <TextInput
-              value={countryCode}
-              onChangeText={(text) => {
-                setCountryCode(countryCodeDigits(text));
-                setPhoneError(null);
-                setNotRegistered(false);
-              }}
-              accessibilityLabel="Country code"
-              keyboardType="number-pad"
-              autoComplete="tel-country-code"
-              maxLength={3}
-              editable={busy === null}
-              style={{
-                minWidth: 26,
-                paddingVertical: 14,
-                paddingHorizontal: 2,
-                fontFamily: "Nunito_700Bold",
-                fontSize: 15,
-                color: colors.ink,
-              }}
-            />
-          </View>
+          />
         }
-        placeholder={countryCode === DEFAULT_COUNTRY_CODE ? "98765 43210" : "Mobile number"}
+        placeholder={phonePlaceholder(countryCode)}
         keyboardType="number-pad"
         autoComplete="tel-national"
         textContentType="telephoneNumber"
@@ -332,10 +303,7 @@ export default function Login() {
         <View style={{ marginTop: 12, alignItems: "flex-start" }}>
           <TextButton
             label="Create an account with this number"
-            onPress={() =>
-              // Sign-up only takes Indian numbers, so only those are carried over.
-              navigation.navigate("Register", countryCode === DEFAULT_COUNTRY_CODE ? { phone: national } : undefined)
-            }
+            onPress={() => navigation.navigate("Register", { country, phone: national })}
           />
         </View>
       )}

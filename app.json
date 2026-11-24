@@ -9,7 +9,8 @@
     "scheme": "nufit",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nufit.app"
+      "bundleIdentifier": "com.nufit.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.nufit.app",
@@ -23,6 +24,10 @@
       "versionCode": 1,
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
+      ],
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -49,7 +54,16 @@
           "microphonePermission": false
         }
       ],
-      "expo-video"
+      "expo-video",
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      [
+        "./plugins/withAndroidNotificationIcon",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#EBA3B6"
+        }
+      ]
     ],
     "extra": {
       "eas": {

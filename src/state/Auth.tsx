@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { loadSession, logIn, logInWithOtp, logOut, onSessionExpired, register } from "../services/session";
 import { CurrentUser, fetchCurrentUser } from "../services/user";
+import { unregisterDevice } from "../services/devices";
 import { userMessage } from "../services/http";
 import { RegisterRequest } from "../utils/registration";
 
@@ -85,6 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // While the session is still valid: stop this user's pushes reaching the phone.
+    await unregisterDevice();
     await logOut();
     setStatus("signedOut");
   }, []);

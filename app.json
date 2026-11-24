@@ -9,7 +9,8 @@
     "scheme": "nufit",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nufit.app"
+      "bundleIdentifier": "com.nufit.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.nufit.app",
@@ -19,13 +20,18 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
+      "./plugins/withFirebaseNotificationManifest",
       "expo-font",
       [
         "expo-splash-screen",
@@ -41,6 +47,16 @@
           "photosPermission": "Choose your front and side photos so Dr. Kanika's team can track your progress.",
           "cameraPermission": "Take your front and side photos so Dr. Kanika's team can track your progress.",
           "microphonePermission": false
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#EBA3B6",
+          "defaultChannel": "general"
         }
       ]
     ]

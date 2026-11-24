@@ -27,6 +27,9 @@ import RootNavigator from "./src/navigation/RootNavigator";
 import Toast from "./src/components/Toast";
 import QuickLogSheet from "./src/components/QuickLogSheet";
 import AppSplash from "./src/components/AppSplash";
+import PushNotifications from "./src/components/PushNotifications";
+import { navigationRef } from "./src/navigation/navigationRef";
+import { openPendingToday } from "./src/services/planPush";
 import { colors } from "./src/theme/colors";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -70,10 +73,11 @@ export default function App() {
       <AuthProvider>
         <SessionAppState>
           <View style={{ flex: 1 }}>
-            <NavigationContainer theme={navTheme}>
+            <NavigationContainer ref={navigationRef} theme={navTheme} onReady={openPendingToday} onStateChange={openPendingToday}>
               <RootNavigator />
               <Toast />
               <QuickLogSheet />
+              <PushNotifications />
             </NavigationContainer>
             {!splashDone && <AppSplash onLayout={onSplashLayout} onFinish={onSplashFinish} />}
             <StatusBar style="dark" />

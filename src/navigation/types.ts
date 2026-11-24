@@ -1,6 +1,6 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { CompositeNavigationProp } from "@react-navigation/native";
+import { CompositeNavigationProp, NavigatorScreenParams } from "@react-navigation/native";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -17,7 +17,8 @@ export type RootStackParamList = {
   Measure: undefined;
   MeasureDone: undefined;
   Mood: undefined;
-  MainTabs: undefined;
+  /** Optionally opens a given tab, e.g. `{ screen: "Today" }`. */
+  MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
   Player: { sessionId: string };
   Recipe: { recipeId: string };
   Sleep: undefined;

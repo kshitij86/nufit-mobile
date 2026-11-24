@@ -31,6 +31,7 @@
       "bundler": "metro"
     },
     "plugins": [
+      "./plugins/withFirebaseNotificationManifest",
       "expo-font",
       [
         "expo-splash-screen",
@@ -51,10 +52,11 @@
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       [
-        "./plugins/withAndroidNotificationIcon",
+        "expo-notifications",
         {
           "icon": "./assets/android-icon-monochrome.png",
-          "color": "#EBA3B6"
+          "color": "#EBA3B6",
+          "defaultChannel": "general"
         }
       ]
     ]

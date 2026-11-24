@@ -1,4 +1,4 @@
-import { Platform } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { AndroidImportance } from "expo-notifications";
 import {
@@ -42,26 +42,53 @@ async function ensureChannel() {
   });
 }
 
-/** Asks for permission to show notifications (Android 13+ and iOS); resolves whether it was granted. */
-async function ensurePermission(): Promise<boolean> {
+/**
+ * Whether notifications may be shown, asking for permission when they may not. With `prompt`,
+ * asks via the system dialog, or, once Android stops showing it (denied twice), explains and
+ * offers the app's settings. Without, only checks (e.g. on returning from those settings).
+ */
+async function ensurePermission(prompt: boolean): Promise<boolean> {
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) return true;
-  if (!current.canAskAgain) return false;
-  return (await Notifications.requestPermissionsAsync()).granted;
+  if (!prompt) return false;
+  if (current.canAskAgain) {
+    const asked = await Notifications.requestPermissionsAsync();
+    if (asked.granted) return true;
+    if (asked.canAskAgain) return false;
+  }
+  offerSettings();
+  return false;
+}
+
+function offerSettings() {
+  Alert.alert(
+    "Turn on notifications",
+    "360° Fitness uses notifications to tell you when Dr. Kanika's team has your plan ready. You can turn them on in Settings.",
+    [
+      { text: "Not now", style: "cancel" },
+      { text: "Open settings", onPress: () => Linking.openSettings().catch(() => {}) },
+    ]
+  );
+}
+
+export interface PushStart {
+  /** False when notifications aren't allowed; nothing was registered and `stop` does nothing. */
+  granted: boolean;
+  stop: () => void;
 }
 
 /**
  * Registers this phone for the signed-in user's notifications and keeps the registration current
  * when FCM rotates the token. Pushes that arrive while the app is open are posted to the
- * notification shade (the OS does that itself when the app is in the background). Resolves to a
- * function that stops it.
+ * notification shade (the OS does that itself when the app is in the background).
  */
-export async function startPushNotifications(): Promise<() => void> {
+export async function startPushNotifications({ prompt }: { prompt: boolean }): Promise<PushStart> {
+  const none: PushStart = { granted: false, stop: () => {} };
   const os = platform();
-  if (!os) return () => {};
+  if (!os) return none;
   // First, so the channel exists before any push can arrive.
   await ensureChannel();
-  if (!(await ensurePermission())) return () => {};
+  if (!(await ensurePermission(prompt))) return none;
 
   const messaging = getMessaging();
   const register = (token: string) =>
@@ -83,10 +110,13 @@ export async function startPushNotifications(): Promise<() => void> {
   } catch (e) {
     console.warn("Couldn't get an FCM token", e);
   }
-  return () => {
-    stopRefresh();
-    stopMessages();
-    stopTaps();
+  return {
+    granted: true,
+    stop: () => {
+      stopRefresh();
+      stopMessages();
+      stopTaps();
+    },
   };
 }
 

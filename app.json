@@ -21,6 +21,10 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
+      "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.POST_NOTIFICATIONS"
@@ -36,7 +40,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFF9F3"
+          "backgroundColor": "#FFF9F3",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200
         }
       ],
       "expo-secure-store",
@@ -49,6 +55,7 @@
           "microphonePermission": false
         }
       ],
+      "expo-video",
       "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       [
@@ -59,6 +66,11 @@
           "defaultChannel": "general"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "46d3a7d0-1edc-49bc-863e-404992a1cb48"
+      }
+    }
   }
 }

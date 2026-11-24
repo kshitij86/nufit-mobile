@@ -42,3 +42,6 @@ yarn-error.*
 
 # payments server secrets
 server/.env
+
+# Play Console upload key (never commit)
+play-service-account.json

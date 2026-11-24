@@ -1,12 +1,13 @@
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { CompositeNavigationProp, NavigatorScreenParams } from "@react-navigation/native";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { StepVideo } from "../types";
 
 export type RootStackParamList = {
   Login: undefined;
   EmailLogin: { email?: string } | undefined;
-  /** `phone` pre-fills the 10-digit Indian mobile number, without +91. */
-  Register: { phone?: string } | undefined;
+  /** Pre-fills the mobile number: `country` is its ISO code (India if left out), `phone` the digits without the country code. */
+  Register: { phone?: string; country?: string } | undefined;
   Welcome: undefined;
   Quiz: undefined;
   Match: undefined;
@@ -21,6 +22,8 @@ export type RootStackParamList = {
   /** Optionally opens a given tab, e.g. `{ screen: "Today" }`. */
   MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
   Player: { sessionId: string };
+  /** One exercise's clip, opened from a workout's list. */
+  ExercisePlayer: { name: string; cue: string; video: StepVideo };
   Recipe: { recipeId: string };
   Sleep: undefined;
   Circle: undefined;

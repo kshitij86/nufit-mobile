@@ -76,14 +76,28 @@ test("checks the number before sending", async () => {
   expect(screen.getByText("Enter all 10 digits of your mobile number.")).toBeOnTheScreen();
 });
 
-test("another country code can be typed", async () => {
+test("India is picked by default; picking another country fills in its code", async () => {
   await open();
   const u = user();
-  await u.clear(screen.getByLabelText("Country code"));
-  await u.type(screen.getByLabelText("Country code"), "44");
+  await u.press(screen.getByLabelText("Country: India +91"));
+  await u.type(screen.getByLabelText("Search countries"), "united k");
+  expect(screen.queryByLabelText("India +91")).toBeNull();
+  await u.press(screen.getByLabelText("United Kingdom +44"));
+
+  expect(screen.getByLabelText("Country: United Kingdom +44")).toBeOnTheScreen();
   await u.type(screen.getByPlaceholderText("Mobile number"), "07700900123");
   await u.press(screen.getByText("Send code"));
   expect(send).toHaveBeenCalledWith("+447700900123");
+});
+
+test("the country list can be searched by dial code and closed without changing the country", async () => {
+  await open();
+  const u = user();
+  await u.press(screen.getByLabelText("Country: India +91"));
+  await u.type(screen.getByLabelText("Search countries"), "+971");
+  expect(screen.getByLabelText("United Arab Emirates +971")).toBeOnTheScreen();
+  await u.press(screen.getByLabelText("Close"));
+  expect(screen.getByLabelText("Country: India +91")).toBeOnTheScreen();
 });
 
 test("logging in with the code signs in with the number it was sent to", async () => {
@@ -144,7 +158,7 @@ test("with no account for the number, offers to sign up with it filled in", asyn
 
   expect(screen.getByText("No account uses this phone number. Sign up first.")).toBeOnTheScreen();
   await u.press(screen.getByText("Create an account with this number"));
-  expect(nav.getCurrentRoute()).toMatchObject({ name: "Register", params: { phone: "9876543210" } });
+  expect(nav.getCurrentRoute()).toMatchObject({ name: "Register", params: { country: "IN", phone: "9876543210" } });
 });
 
 test("other send errors show the server's message and stay on the number", async () => {
@@ -158,17 +172,15 @@ test("other send errors show the server's message and stay on the number", async
   expect(screen.getByText("Log in with email and password")).toBeOnTheScreen();
 });
 
-test("phone comes first, then email code (coming soon), then email and password", async () => {
+test("phone comes first, then email and password", async () => {
   await open();
-  const labels = ["Send code", "Log in with email code · coming soon", "Log in with email and password"];
+  const labels = ["Send code", "Log in with email and password"];
   const order = labels.map((label) => screen.getByText(label));
   expect(order.map((el) => el.props.children)).toEqual(labels);
 
-  const u = user();
-  await u.press(screen.getByText("Log in with email code · coming soon"));
-  expect(nav.getCurrentRoute()?.name).toBe("Login");
+  expect(screen.queryByText(/email code/i)).toBeNull();
 
-  await u.press(screen.getByText("Log in with email and password"));
+  await user().press(screen.getByText("Log in with email and password"));
   expect(nav.getCurrentRoute()?.name).toBe("EmailLogin");
 });
 

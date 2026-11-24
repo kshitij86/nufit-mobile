@@ -2,7 +2,7 @@ import { API_HOST } from "../../config";
 import { fetchTodayPlan } from "../diet";
 import { fetchProgrammeStatus } from "../journey";
 import { logIn, logOut } from "../session";
-import { getSession, listWeekSessions } from "../workouts";
+import { getSession, listWeekSessions, sessionExercises } from "../workouts";
 import { FetchMock, jsonResponse, mockFetch, requestOf, tokens } from "../../test/fetchMock";
 
 jest.mock("expo-secure-store", () => {
@@ -156,9 +156,44 @@ describe("workouts", () => {
 
     expect(requestOf(fetchMock, 0).url).toBe(`${ME}/workouts/sessions/2026-10-14`);
     expect(session.steps).toEqual([
-      { name: "Squat", cue: "Round 1 of 3 · 20 reps", seconds: 60 },
+      { name: "Squat", cue: "Round 1 of 3 · 20 reps", seconds: 60, exerciseCode: "LB-12" },
       { name: "Rest", cue: "Breathe.", seconds: 25 },
     ]);
+  });
+
+  test("maps a step's clip with its language versions and subtitles, and lists each exercise once", async () => {
+    const video = {
+      url: "https://blob/v1/source.mp4",
+      thumbnail_url: "https://blob/v1/thumbnail.jpg",
+      duration_sec: 42,
+      expires_at: "2026-10-14T10:00:00Z",
+      chapters: [],
+      language: "en",
+      audio_versions: [
+        { language: "en", url: "https://blob/v1/source.mp4" },
+        { language: "hi", url: "https://blob/v1/audio-hi.mp4" },
+      ],
+      subtitles: [{ language: "hi", url: "https://blob/v1/subtitles-hi.vtt" }],
+    };
+    const squat = { name: "Squat", cue: "20 reps", seconds: 60, exercise_code: "LB-12", video };
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(200, {
+        ...summary("2026-10-14", "today"),
+        steps: [squat, { name: "Rest", cue: "Breathe.", seconds: 25, exercise_code: null, video: null }, squat],
+      })
+    );
+
+    const session = await getSession("2026-10-14");
+
+    expect(session.steps[0].video).toEqual({
+      url: "https://blob/v1/source.mp4",
+      thumbnailUrl: "https://blob/v1/thumbnail.jpg",
+      durationSec: 42,
+      language: "en",
+      audioVersions: video.audio_versions,
+      subtitles: video.subtitles,
+    });
+    expect(sessionExercises(session).map((s) => s.exerciseCode)).toEqual(["LB-12"]);
   });
 
   test("shows the server's message when a session doesn't exist", async () => {

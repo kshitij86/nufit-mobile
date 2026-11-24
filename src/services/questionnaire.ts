@@ -1,7 +1,7 @@
 import { File, UploadType } from "expo-file-system";
 import { USERS_BASE_URL } from "../config";
 import { ApiError, NetworkError } from "./http";
-import { invalidate, Resource, useResource } from "./resource";
+import { invalidate, publish, Resource, useResource } from "./resource";
 import { authGet, authPost, authPut } from "./session";
 
 // The detailed "Guide me about you" questionnaire, opened once a programme is bought.
@@ -303,7 +303,7 @@ export async function signConsent(signature: string, photoConsent: PhotoConsent)
       { fallbackError: "Couldn't save your consent. Please try again." }
     )
   );
-  invalidate(QUESTIONNAIRE_RESOURCE_KEY);
+  publish(QUESTIONNAIRE_RESOURCE_KEY, state);
   return state;
 }
 
@@ -314,7 +314,8 @@ export async function submitQuestionnaire(answers: QuestionnaireAnswers): Promis
       fallbackError: "Couldn't send your questionnaire. Please try again.",
     })
   );
-  invalidate(QUESTIONNAIRE_RESOURCE_KEY);
+  // Straight to every screen: the root navigator moves the member on from this answer.
+  publish(QUESTIONNAIRE_RESOURCE_KEY, state);
   return state;
 }
 

@@ -3,16 +3,17 @@ import {
   formatDateOfBirth,
   parseDateOfBirth,
   passwordProblem,
-  phoneDigits,
   RegistrationForm,
   toRegisterRequest,
   validateRegistration,
 } from "../registration";
+import { phoneDigits } from "../phone";
 
 const valid: RegistrationForm = {
   firstName: " Priya ",
   lastName: "Sharma",
   email: " priya@example.com ",
+  country: "IN",
   phone: "98765-43210",
   dateOfBirth: "15/04/1992",
   gender: "female",
@@ -46,6 +47,7 @@ test("flags each invalid field", () => {
       firstName: "",
       lastName: " ",
       email: "priya@",
+      country: "IN",
       phone: "",
       dateOfBirth: "",
       gender: null,
@@ -72,6 +74,13 @@ test("requires exactly 10 digits starting with 6-9", () => {
   expect(validateRegistration({ ...valid, phone: "98765" }, today).phone).toMatch(/10 digits/);
   expect(validateRegistration({ ...valid, phone: "5876543210" }, today).phone).toMatch(/valid Indian mobile/);
   expect(validateRegistration({ ...valid, phone: "6876543210" }, today).phone).toBeUndefined();
+});
+
+test("a number from another country is checked and sent with that country's code", () => {
+  const uk = { ...valid, country: "GB", phone: "07700 900123" };
+  expect(validateRegistration(uk, today).phone).toBeUndefined();
+  expect(toRegisterRequest(uk).phone_number).toBe("+447700900123");
+  expect(validateRegistration({ ...uk, phone: "770" }, today).phone).toBe("Enter a valid mobile number.");
 });
 
 test("rejects a future date of birth and mismatched passwords", () => {
